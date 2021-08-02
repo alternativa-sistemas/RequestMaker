@@ -1,0 +1,910 @@
+unit RequestMaker3000;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, IdIOHandler, IdIOHandlerSocket,JSON.Utils,
+  IdIOHandlerStack, IdSSL, IdSSLOpenSSL, IdBaseComponent, IdComponent,
+  IdTCPConnection, IdTCPClient, IdHTTP, Vcl.StdCtrls, uJson, Vcl.ComCtrls,
+  Vcl.ExtCtrls, IdIntercept, Vcl.Grids, RzGrids,System.Net.URLClient, System.Net.HttpClient, System.Net.HttpClientComponent,
+  REST.Types, REST.Client, REST.Authenticator.Basic, Data.Bind.Components,IOUtils,
+  Data.Bind.ObjectScope;
+
+
+type
+  TForm1 = class(TForm)
+    Label1: TLabel;
+    Label2: TLabel;
+    MemoCodigos: TMemo;
+    btnEnviar: TButton;
+    edtToken: TEdit;
+    rdrCategorias: TRadioButton;
+    rdrImages: TRadioButton;
+    rdrFab: TRadioButton;
+    rdrProduto: TRadioButton;
+    rdrSkus: TRadioButton;
+    rdrArvore: TRadioButton;
+    IdHTTP1: TIdHTTP;
+    IdSSLIOHandlerSocketOpenSSL1: TIdSSLIOHandlerSocketOpenSSL;
+    MemoResposta: TMemo;
+    btnLimpaCodigos: TButton;
+    btnApagarResposta: TButton;
+    Button1: TButton;
+    chkNome: TCheckBox;
+    btnSalvar: TButton;
+    PageControl: TPageControl;
+    TabAnymarket: TTabSheet;
+    TabSkyhub: TTabSheet;
+    TabLojaIntegrada: TTabSheet;
+    edtChaveApi: TEdit;
+    edtAplicacao: TEdit;
+    btnEnviarLI: TButton;
+    rdrTipoGrade: TRadioButton;
+    rdrGrades: TRadioButton;
+    rdrProdutoLI: TRadioButton;
+    rdrFoto: TRadioButton;
+    Button2: TButton;
+    edtId: TEdit;
+    Edit1: TEdit;
+    Token: TEdit;
+    Button3: TButton;
+    TabOlist: TTabSheet;
+    PageControl1: TPageControl;
+    Dados: TTabSheet;
+    Anuncios: TTabSheet;
+    btnOlistBuscar: TButton;
+    lblolistAuth: TLabel;
+    gdProduto: TStringGrid;
+    NetHTTPClient1: TNetHTTPClient;
+    btnSave: TButton;
+    edtOlistAuth: TMemo;
+    memImport: TMemo;
+    Executar: TButton;
+    edtUser: TEdit;
+    edtSenha: TEdit;
+    btnLimpar: TButton;
+    lblAuthMaster: TLabel;
+    lblStatus: TLabel;
+    edtIntegrationID: TEdit;
+    Status: TTabSheet;
+    gdStatus: TStringGrid;
+    Label3: TLabel;
+    Label4: TLabel;
+    Label5: TLabel;
+    procedure btnEnviarClick(Sender: TObject);
+    procedure btnLimpaCodigosClick(Sender: TObject);
+    procedure btnApagarRespostaClick(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure rdrFabClick(Sender: TObject);
+    procedure btnSalvarClick(Sender: TObject);
+    procedure PageControlChange(Sender: TObject);
+    procedure btnEnviarLIClick(Sender: TObject);
+    procedure rdrProdutoClick(Sender: TObject);
+    procedure rdrSkusClick(Sender: TObject);
+    procedure rdrImagesClick(Sender: TObject);
+    procedure rdrCategoriasClick(Sender: TObject);
+    procedure rdrArvoreClick(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure btnOlistBuscarClick(Sender: TObject);
+    procedure btnSaveClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure ExecutarClick(Sender: TObject);
+    procedure NetHTTPClient1AuthEvent(const Sender: TObject;
+      AnAuthTarget: TAuthTargetType; const ARealm, AURL: string; var AUserName,
+      APassword: string; var AbortAuth: Boolean;
+      var Persistence: TAuthPersistenceType);
+    procedure PageControl1Change(Sender: TObject);
+    procedure btnLimparClick(Sender: TObject);
+
+  private
+    { Private declarations }
+  public
+      Arquivo:TStringList;
+  end;
+
+var
+  Form1: TForm1;
+
+implementation
+
+{$R *.dfm}
+
+{$REGION 'CONTROLE'}
+procedure TForm1.FormCreate(Sender: TObject);
+begin
+  PageControl.TabIndex:=0;
+  Dados.tabvisible:=True;
+  Anuncios.tabvisible:=False;
+  Status.TabVisible:=False;
+  Arquivo:=TStringList.Create;
+end;
+
+procedure TForm1.FormDestroy(Sender: TObject);
+begin
+ FreeAndNil(Arquivo);
+end;
+
+
+
+
+procedure TForm1.PageControlChange(Sender: TObject);
+begin
+  Dados.TabVisible:=True;
+  Anuncios.TabVisible:=False;
+  Status.TabVisible:=False;
+  IF PageControl.TabIndex = 2 then
+  begin
+    IdHTTP1.Request.ContentType:='application/json';
+    IdHTTP1.Request.Host:='api.awsli.com.br';
+    IdHTTP1.Request.Accept:='application/json';
+    IdHTTP1.Request.AcceptEncoding:='identity';
+    IdHTTP1.Request.UserAgent:='AS-Master';
+  end
+  else if PageControl.TabIndex = 3 then
+  begin
+    Dados.TabVisible:=False;
+    Anuncios.TabVisible:=True;
+    Status.TabVisible:=True;
+    pagecontrol1.TabIndex := 0;
+  end
+
+  {$ENDREGION}
+End;
+
+{$REGION 'ANYMARKET'}
+
+
+procedure TForm1.btnEnviarClick(Sender: TObject);
+  var
+  Resposta,IdImg, description,SkuID, VarId, FabId, FabName, url, ProId, CatId, CatNome,
+  ChaveApi, aplicacao, ProNome, NomeGrade, IdGrade, PrecoDe, PrecoPor, ProBarra, PartnerId, Peso, Altura, Largura,Profundidade,
+  Path, Modelo:string;
+  JSON: TJSONArray;
+  JSONobj: TJSONObject;
+  ListaCodigos: TStringList;
+  I,x,Paginas,Incremento, linha:Integer;
+begin
+  ListaCodigos := TStringList.Create;
+  description := '';
+  ListaCodigos.Delimiter := ',';
+  ListaCodigos.DelimitedText := MemoCodigos.Text;
+
+  if rdrProduto.Checked then
+  begin
+    Incremento := 0;
+    url:='';
+    Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/products?gumgaToken='+edtToken.Text);
+    JSONobj := TJSONObject.create(Resposta);
+    try
+      Paginas :=  JSONobj.getJSONObject('page').getInt('totalPages');
+    finally
+      FreeAndNil(JSONobj);
+    end;
+
+    for I := 0 to Paginas - 1 do
+    begin
+      url:='http://api.anymarket.com.br/v2/products?gumgaToken='+edtToken.Text+'&offset='+IntToStr(Incremento)+'&limit=100';
+      Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/products?gumgaToken='+edtToken.Text+'&offset='+IntToStr(Incremento)+'&limit=100' );
+      JSONobj := TJSONObject.create(Resposta);
+      if chkNome.Checked = true then
+      BEGIN
+      if JSONobj.has('content') then
+        begin
+          Incremento := Incremento+100;
+          for x := 0 to JSONobj.getJSONArray('content').length - 1 do
+          begin
+            ProId := JSONobj.getJSONArray('content').getJSONObject(x).getString('id');
+            Peso := JSONobj.getJSONArray('content').getJSONObject(x).getString('weight');
+            Altura := JSONobj.getJSONArray('content').getJSONObject(x).getString('height');
+            Largura := JSONobj.getJSONArray('content').getJSONObject(x).getString('width');
+            Profundidade := JSONobj.getJSONArray('content').getJSONObject(x).getString('length');
+            if JSONobj.getJSONArray('content').getJSONObject(x).has('model') then
+            begin
+              Modelo := UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('model'));
+            end else
+            Begin
+              Modelo := '';
+            End;
+              ProNome := UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('title'));
+            if JSONobj.getJSONArray('content').getJSONObject(x).has('category') then
+            begin
+              CatId:= UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getJSONObject('category').getString('id'));
+            end else
+            begin
+              CatId:= 'Item não possui Categoria';
+            end;
+            if JSONobj.getJSONArray('content').getJSONObject(x).has('brand') then
+            begin
+              FabId:= UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getJSONObject('brand').getString('id'));
+            end
+            else
+            begin
+              FabId:='Item não possui Marca';
+            end;
+            MemoResposta.Lines.Add(ProId+' | '+ ProNome+' | '+FabID +' | '+ CatId + ' | ' + Peso +' | '+ Altura +' | '+ Largura +' | '+ Profundidade +' | '+ Modelo);
+            MemoResposta.Lines.SaveToFile('C:\Teste\Produtos.txt');
+          end;
+        END
+      end else
+      BEGIN
+       IF JSONobj.has('content') then
+        begin
+          Incremento := Incremento+100;
+          for x := 0 to JSONobj.getJSONArray('content').length - 1 do
+          begin
+            ProId := JSONobj.getJSONArray('content').getJSONObject(x).getString('id');
+            MemoResposta.Lines.Add(ProId+',');
+            MemoResposta.Lines.SaveToFile('C:\Teste\Produtos.txt');
+          end;
+        end;
+      end;
+    end;
+  end;
+
+  IF rdrSkus.Checked = True then
+  begin
+    linha:=0;
+    for I := 0 to ListaCodigos.Count -1 do
+    begin
+      IF chkNome.Checked then
+        begin
+        try
+          Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/products/'+ListaCodigos[i]+'/skus?gumgaToken='+edtToken.Text+'' );
+          JSON := TJSONArray.Create(Resposta);
+          for x := 0 to JSON.length -1 do
+          begin
+            IF JSON.getJSONObject(0).has('variations') then
+            begin
+              description:=UTF8ToString(JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('description'));
+              VarId:=JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('id');
+              ProNome:=UTF8ToString(JSON.getJSONObject(x).getString('title'));
+              PrecoDe:=JSON.getJSONObject(x).getString('price');
+              PrecoPor:=JSON.getJSONObject(x).getString('sellprice');
+              if JSON.getJSONObject(x).has('PartnerID') then
+              begin
+                PartnerId:=JSON.getJSONObject(x).getString('PartnerID');
+              end else
+              begin
+                PartnerId:= '';
+              end;
+              SkuID:=JSON.getJSONObject(x).getString('id');
+              MemoResposta.Lines.Add(ListaCodigos[I]+' | '+ SkuID + ' | '+ProNome+' | '+PrecoDe+' | '+PrecoPor+' | '+VarId+' | '+PartnerId + ' | ' +description);
+              MemoResposta.Lines.SaveToFile('C:\Teste\Skus.txt');
+            end else
+            begin
+              Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/products/'+ListaCodigos[i]+'/skus?gumgaToken='+edtToken.Text+'' );
+              JSON := TJSONArray.Create(Resposta);
+              ProNome:=UTF8ToString(JSON.getJSONObject(x).getString('title'));
+              PrecoDe:=JSON.getJSONObject(x).getString('price');
+              PrecoPor:=JSON.getJSONObject(x).getString('sellprice');
+              PartnerId:=JSON.getJSONObject(x).getString('PartnerID');
+              SkuID:=JSON.getJSONObject(x).getString('id');
+              MemoResposta.Lines.Add(ListaCodigos[I]+' | '+ SkuID +' | '+ProNome +' | '+PrecoDe +' | '+PrecoPor+' | '+ 'Sem Variação' +' | '+PartnerId);
+              MemoResposta.Lines.SaveToFile('C:\Teste\Skus.txt');
+            end;
+          end;
+        except
+          on e:exception do
+          begin
+            MemoResposta.Lines.Add(ListaCodigos[i]+' - Não Existe Sku para este produto - '+ e.message);
+          end;
+        end
+      end
+      ELSE
+        begin
+        try
+        Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/products/'+ListaCodigos[i]+'/skus?gumgaToken='+edtToken.Text+'' );
+        JSON := TJSONArray.Create(Resposta);
+        for x := 0 to JSON.length -1 do
+          begin
+            IF JSON.getJSONObject(0).has('variations') then
+            begin
+              description:=UTF8ToString(JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('description'));
+              VarId:=JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('id');
+              SkuID := JSON.getJSONObject(x).getString('id');
+              MemoResposta.Lines.Add(ListaCodigos[I]+' | '+ SkuId +' | '+description + ' | '+VarId);
+              MemoResposta.Lines.SaveToFile('C:\Teste\Skus.txt');
+            end else
+            begin
+              Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/products/'+ListaCodigos[i]+'/skus?gumgaToken='+edtToken.Text+'' );
+              JSON := TJSONArray.Create(Resposta);
+              SkuId := JSON.getJSONObject(x).getString('id');
+              MemoResposta.Lines.Add(ListaCodigos[I]+' | '+ SkuId +' | Sem Variação');
+              MemoResposta.Lines.SaveToFile('C:\Teste\Skus.txt');
+            end
+          end;
+        except
+          on e:exception do
+          begin
+            MemoResposta.Lines.Add(ListaCodigos[i]+' - Não Existe Sku para este produto - '+ e.message);
+          end;
+        end;
+      end;
+    end;
+  end;
+
+  IF rdrFab.Checked = True then
+  begin
+    Incremento := 0;
+    url := '';
+    Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/brands?gumgaToken='+edtToken.Text+'&offset='+IntToStr(Incremento)+'&limit=100');
+    JSONobj:= TJSONObject.Create(Resposta);
+
+    try
+      Paginas :=  JSONobj.getJSONObject('page').getInt('totalPages');
+    finally
+      FreeAndNil(JSONobj);
+    end;
+
+    for I := 0 to Paginas -1 do
+    begin
+      JSONobj := TJSONObject.create(Resposta);
+      IF chkNome.Checked then
+      begin
+        for x := 0 to JSONobj.getJSONArray('content').length -1 do
+        begin
+          FabId:=JSONobj.getJSONArray('content').getJSONObject(x).getString('id');
+          FabName:=UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('name'));
+          MemoResposta.Lines.Add(FabId +' | '+FabName);
+          Incremento := Incremento + 100;
+        end;
+      end ELSE
+        for x := 0 to JSONobj.getJSONArray('content').length -1 do
+      begin
+        FabId:=JSONobj.getJSONArray('content').getJSONObject(x).getString('id');
+        FabName:=UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('name'));
+        MemoResposta.Lines.Add(FabId+',');
+        MemoResposta.Lines.SaveToFile('C:\Teste\Fabricantes.txt');
+        Incremento := Incremento + 100;
+      end;
+    end;
+  end;
+
+  IF rdrCategorias.Checked = True then
+  begin
+    Incremento := 0;
+    Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/categories?gumgaToken='+edtToken.Text+'&offset='+IntToStr(Incremento)+'&limit=100' );
+    JSONobj := TJSONObject.create(Resposta);
+    try
+      IF not chkNome.Checked then
+      begin
+      Incremento := Incremento+100;
+        for x := 0 to JSONobj.getJSONArray('content').length - 1 do
+        begin
+          CatId := JSONobj.getJSONArray('content').getJSONObject(x).getString('id');
+          MemoResposta.Lines.Add(CatId+',');
+          MemoResposta.Lines.SaveToFile('C:\Teste\Categorias.txt');
+        end;
+      end else
+      begin
+        for x := 0 to JSONobj.getJSONArray('content').length - 1 do
+        begin
+          CatId := JSONobj.getJSONArray('content').getJSONObject(x).getString('id');
+          CatNome := UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('name'));
+          MemoResposta.Lines.Add(CatId +'|'+CatNome);
+          MemoResposta.Lines.SaveToFile('C:\Teste\Categorias.txt');
+        end;
+      end;
+    finally
+      JSONobj.Free;
+    end;
+  end;
+
+  IF rdrArvore.Checked = True then
+  for I := 0 to ListaCodigos.Count -1 do
+  begin
+    Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/categories/'+ListaCodigos[i]+'?gumgaToken='+edtToken.Text);
+    JSONobj := TJSONObject.Create(Resposta);
+    IF chkNome.Checked then
+      begin
+      IF JSONobj.has('Children') then
+      begin
+        for x := 0 to JSONobj.getJSONArray('children').Length -1 do
+        begin
+         CatId:= JSONobj.getJSONArray('children').getJSONObject(x).getString('id');
+         CatNome:= UTF8ToString(JSONobj.getJSONArray('children').getJSONObject(x).getString('name'));
+         Path:= UTF8ToString(JSONobj.getJSONArray('children').getJSONObject(x).getString('path'));
+         MemoResposta.Lines.Add(ListaCodigos[I]+' | '+ CatId +' | '+ CatNome + ' | ' + ListaCodigos[I]+'/'+CatId + ' | '+ Path);
+        end;
+        MemoResposta.Lines.SaveToFile('C:\Teste\Arvore de Categorias.txt');
+      end
+      ELSE
+      begin
+        MemoResposta.Lines.Add(ListaCodigos[I]+' - Não tem subCategoria');
+      end;
+    end
+    ELSE
+    begin
+      IF JSONobj.has('Children') then
+      begin
+        for x := 0 to JSONobj.getJSONArray('children').Length -1 do
+        begin
+         CatId:= JSONobj.getJSONArray('children').getJSONObject(x).getString('id');
+         CatNome:= UTF8ToString(JSONobj.getJSONArray('children').getJSONObject(x).getString('name'));
+         MemoResposta.Lines.Add(ListaCodigos[I]+' | '+ CatId);
+        end;
+        MemoResposta.Lines.SaveToFile('C:\Teste\Arvore de Categorias.txt');
+      end else
+      begin
+        MemoResposta.Lines.Add(ListaCodigos[I]+' - Não tem subCategoria');
+      end;
+    end;
+  end;
+
+  IF rdrTipoGrade.Checked then
+  begin
+    Incremento := 0;
+    Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/variations?gumgaToken='+edtToken.Text+'&offset='+IntToStr(Incremento)+'&limit=100' );
+    JSONobj := TJSONObject.create(Resposta);
+    for x := 0 to JSONobj.getJSONArray('content').length - 1 do
+    begin
+      IdGrade := JSONobj.getJSONArray('content').getJSONObject(x).getString('id');
+      NomeGrade := UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('name'));
+      MemoResposta.Lines.Add(IdGrade +' | '+ NomeGrade);
+      MemoResposta.Lines.SaveToFile('C:\Teste\Tipo_grade.txt');
+      Incremento := Incremento + 100;
+    end;
+  end;
+
+  IF rdrGrades.Checked then
+  begin
+    for I := 0 to ListaCodigos.Count -1 do
+      begin
+      Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/variations/'+ListaCodigos[I]+'?gumgaToken='+edtToken.Text);
+      JSONobj := TJSONObject.create(Resposta);
+      for x := 0 to JSONobj.getJSONArray('values').length -1 do
+      begin
+        IdGrade := JSONobj.getJSONArray('values').getJSONObject(x).getString('id');
+        NomeGrade := UTF8ToString(JSONobj.getJSONArray('values').getJSONObject(x).getString('description'));
+        MemoResposta.Lines.Add(ListaCodigos[I] + ' | ' + IdGrade +' | '+ NomeGrade);
+        MemoResposta.Lines.SaveToFile('C:\Teste\Grade.txt');
+      end;
+    end;
+  end;
+
+  IF rdrImages.Checked = True then
+  for I := 0 to ListaCodigos.Count -1 do
+  begin
+    Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/products/'+ListaCodigos[i]+'/images?gumgaToken='+edtToken.Text+'' );
+    JSON := TJSONArray.Create(Resposta);
+    for x := 0 to JSON.length -1 do
+    begin
+      IdImg := JSON.getJSONObject(x).getString('id');
+      url := JSON.getJSONObject(x).getString('url');
+      MemoResposta.Lines.Add(ListaCodigos[I] + ' | '+IdImg+' | '+url);
+    end;
+   MemoResposta.Lines.SaveToFile('C:\Teste\Urls.txt');
+  end;
+end;
+
+procedure TForm1.btnLimpaCodigosClick(Sender: TObject);
+begin
+  MemoCodigos.Clear;
+end;
+
+procedure TForm1.btnSalvarClick(Sender: TObject);
+begin
+  IF rdrFab.Checked then
+  begin
+    memoresposta.Lines.SaveToFile('C:\Teste/Fabricante.txt');
+  end;
+  IF rdrCategorias.Checked then
+  begin
+    MemoResposta.Lines.SaveToFile('C:\Teste/Fabricante.txt');
+  end;
+  IF rdrSkus.Checked then
+  begin
+    MemoResposta.Lines.SaveToFile('C:\Teste/SKUS.txt');
+  end;
+  IF rdrProduto.checked then
+  begin
+    MemoResposta.Lines.SaveToFile('C:\Teste/Produto.txt');
+  end;
+  IF rdrArvore.Checked then
+  begin
+    MemoResposta.Lines.SaveToFile('C:\Teste/Arvore de Categorias.txt');
+  end;
+  IF rdrImages.Checked then
+  begin
+    MemoResposta.Lines.SaveToFile('C:\Teste/Imagens.txt');
+  end;
+end;
+
+
+procedure TForm1.Button1Click(Sender: TObject);
+begin
+  MemoCodigos.Lines:=MemoResposta.Lines;
+  MemoResposta.Clear;
+end;
+
+
+
+procedure TForm1.rdrArvoreClick(Sender: TObject);
+begin
+  chkNome.Visible := True;
+end;
+
+procedure TForm1.rdrCategoriasClick(Sender: TObject);
+begin
+  chkNome.Visible := True;
+end;
+
+procedure TForm1.rdrFabClick(Sender: TObject);
+begin
+  chkNome.Visible := True;
+end;
+
+procedure TForm1.rdrImagesClick(Sender: TObject);
+begin
+  chkNome.Visible := false;
+end;
+
+procedure TForm1.rdrProdutoClick(Sender: TObject);
+begin
+  chkNome.Visible := True;
+end;
+
+procedure TForm1.rdrSkusClick(Sender: TObject);
+begin
+  chkNome.Visible := True;
+end;
+
+procedure TForm1.btnApagarRespostaClick(Sender: TObject);
+begin
+  MemoResposta.Clear;
+end;
+
+
+
+{$ENDREGION}
+
+{$REGION 'LOJA INTEGRADA'}
+
+
+
+procedure TForm1.Button2Click(Sender: TObject);
+  var
+    Resposta,IdImg, description, VarId, FabId, FabName, url, ProId, CatId, CatNome, ChaveApi, aplicacao, ProNome, NomeGrade, IdGrade, PrecoDe, PrecoPor, ProBarra:string;
+    JSON: TJSONArray;
+    JSONobj: TJSONObject;
+    ListaCodigos: TStringList;
+    I,x,Paginas,Incremento, linha:Integer;
+begin
+ ChaveApi:=edtChaveApi.Text;
+ aplicacao:=edtAplicacao.Text;
+ IF IdHTTP1.Request.CustomHeaders.Text = '' then
+  begin
+    IdHTTP1.Request.CustomHeaders.AddValue('authorization','chave_api '+ ChaveApi + ' aplicacao '+ Aplicacao);
+    resposta:= IdHTTP1.get('http://api.awsli.com.br/v1/pedido/'+ edtid.Text);
+    JSONobj := TJSONObject.create(Resposta);
+
+    //try
+     // Paginas :=  JSONobj.getJSONObject('meta').getInt('total_count');
+    //finally
+      //FreeAndNil(JSONobj);
+  end;
+end;
+
+
+
+
+procedure TForm1.btnEnviarLIClick(Sender: TObject);
+var
+ChaveApi, aplicacao, resposta, url, IdLi, NomeLi, urlLI:string;
+ListaCodigos: TStringList;
+i,x,Paginas, Incremento, counter:integer;
+JSONobj: TJSONObject;
+begin
+  ListaCodigos := TStringList.Create;
+  Incremento:=0;
+  ChaveApi:=edtChaveApi.Text;
+  aplicacao:=edtAplicacao.Text;
+  IF rdrProdutoLI.checked then
+  begin
+    ListaCodigos := TStringList.Create;
+    ListaCodigos.Delimiter := ',';
+    ListaCodigos.DelimitedText := MemoCodigos.Text;
+    IF IdHTTP1.Request.CustomHeaders.Text = '' then
+      begin
+      IdHTTP1.Request.CustomHeaders.AddValue('authorization','chave_api '+ ChaveApi + ' aplicacao '+ Aplicacao);
+      resposta:= IdHTTP1.get('http://api.awsli.com.br/v1/produto');
+      JSONobj := TJSONObject.create(Resposta);
+      try
+        Paginas :=  JSONobj.getJSONObject('meta').getInt('total_count');
+      finally
+        FreeAndNil(JSONobj);
+      end;
+    end
+    ELSE
+    begin
+      resposta:= IdHTTP1.get('http://api.awsli.com.br/v1/produto');
+      JSONobj := TJSONObject.create(Resposta);
+      try
+        Paginas :=  JSONobj.getJSONObject('meta').getInt('total_count');
+      finally
+        FreeAndNil(JSONobj);
+      end;
+    end;
+    Paginas:= (round(Paginas/20+1));
+
+    for I := 0 to Paginas -1 do
+    begin
+      Resposta := IdHTTP1.get('http://api.awsli.com.br/v1/produto?limit=20&offset='+IntToStr(incremento));
+      JSONobj := TJSONObject.Create(Resposta);
+      try
+      for x := 0 to JSONObj.getJSONArray('objects').length -1  do
+        begin
+          IdLi:= JSONobj.getJSONArray('objects').getJSONObject(x).getString('id');
+          NomeLi:= JSONobj.getJSONArray('objects').getJSONObject(x).getString('nome');
+          MemoResposta.Lines.Add(IdLi+' - ' + Nomeli);
+        end;
+        Incremento := Incremento+10;
+      finally
+      end;
+    end;
+  end;
+
+  IF rdrFoto.Checked then
+  IF IdHTTP1.Request.CustomHeaders.Text = '' then
+  begin
+    begin
+      ListaCodigos := TStringList.Create;
+      ListaCodigos.Delimiter := ',';
+      ListaCodigos.DelimitedText := MemoCodigos.Text;
+      IF IdHTTP1.Request.CustomHeaders.Text = '' then
+        begin
+        IdHTTP1.Request.CustomHeaders.AddValue('authorization','chave_api '+ ChaveApi + ' aplicacao '+ Aplicacao);
+        resposta:= IdHTTP1.get('http://api.awsli.com.br/v1/produto');
+        JSONobj := TJSONObject.create(Resposta);
+        try
+          Paginas :=  JSONobj.getJSONObject('meta').getInt('total_count');
+        finally
+          FreeAndNil(JSONobj);
+        END;
+      END
+      ELSE
+      begin
+        resposta:= IdHTTP1.get('http://api.awsli.com.br/v1/produto');
+        JSONobj := TJSONObject.create(Resposta);
+        counter:=0;
+        try
+          Paginas :=  JSONobj.getJSONObject('meta').getInt('total_count');
+        finally
+          FreeAndNil(JSONobj);
+        END;
+      END;
+      for I := 0 to ListaCodigos.Count -1 do
+      begin
+        Resposta := IdHTTP1.get('http://api.awsli.com.br/v1/produto_imagem/?produto='+ListaCodigos[i]);
+        JSONobj := TJSONObject.Create(Resposta);
+
+        try
+        for x := 0 to JSONObj.getJSONArray('objects').length -1  do
+          begin
+            urlLi:= JSONobj.getJSONArray('objects').getJSONObject(x).getString('caminho');
+            MemoResposta.Lines.Add(ListaCodigos[i]+' - ' + urlli);
+            counter:=counter+1;
+            IF counter > 20 then
+            begin
+              //MemoResposta.Lines.Add('Aguarde 10 Segundos');
+              sleep(40000);
+              counter:=0;
+            END;
+          END;
+          finally
+          //FreeAndNil(JSONobj);
+        END;
+      END;
+      IdHTTP1.Request.CustomHeaders.Text := '';
+    END;
+  END;
+END;
+
+{$ENDREGION}
+
+{$REGION 'SKYHUB'}
+
+procedure TForm1.Button3Click(Sender: TObject);
+var
+resposta, IDSKU:string ;
+begin
+  resposta:=IdHTTP1.get('https://api.skyhub.com.br/products/'+IDSKU);
+  IdHTTP1.Request.CustomHeaders.AddValue('X-User-Email:', edtChaveApi.Text);
+  IdHTTP1.Request.CustomHeaders.AddValue( 'X-Api-Key:', edtAplicacao.Text);
+end;
+
+
+
+
+
+{$ENDREGION}
+
+{$REGION 'OLIST'}
+
+procedure TForm1.NetHTTPClient1AuthEvent(const Sender: TObject;
+  AnAuthTarget: TAuthTargetType; const ARealm, AURL: string; var AUserName,
+  APassword: string; var AbortAuth: Boolean;
+  var Persistence: TAuthPersistenceType);
+begin
+   if AnAuthTarget = TAuthTargetType.Server then
+  begin
+    AUserName := edtUser.Text;
+    APassword := edtSenha.Text;
+  end;
+end;
+
+procedure TForm1.btnSaveClick(Sender: TObject);
+
+begin
+  if not TDirectory.Exists('C:\RequestMaker3000') then
+    TDirectory.CreateDirectory('C:\RequestMaker3000');
+    Arquivo.SaveToFile('C:\RequestMaker3000\Export.csv');
+end;
+
+procedure TForm1.btnOlistBuscarClick(Sender: TObject);
+
+  var headers, CustomHeaders, resposta, Auth, host, Dados, produto_nome, produto_group, produto_ean, count:string;
+  Obj: TJSONObject;
+  x,y,z:Integer;
+  Response:iHTTPResponse;
+
+begin
+  gdProduto.ColWidths[0]:= 500;
+  Auth:='JWT '+edtOlistAuth.Text;
+  NetHTTPClient1.CustomHeaders['Authorization']:=Auth;
+  host:='http://partners-api.olist.com/v1/seller-products/';
+  Arquivo.Clear;
+  y:=0;
+  repeat
+    Response:=NetHTTPClient1.Get(host);
+    Resposta:=Response.ContentAsString;
+    Obj:=TJSONObject.create(Resposta);
+    count:=obj.getString('count');
+    gdProduto.RowCount:=count.ToInteger;
+    try
+      if Obj.has('results') then
+      begin
+        for x := 0 to Obj.getJSONArray('results').length - 1 do
+        begin
+          produto_nome:=Obj.getJSONArray('results').getJSONObject(x).getString('name');
+          produto_group:=Obj.getJSONArray('results').getJSONObject(x).getString('group');;
+          produto_ean:=Obj.getJSONArray('results').getJSONObject(x).getString('gtin');;
+          Dados := produto_nome+' | '+produto_ean+' | '+produto_group;
+          gdProduto.Cells[0, y]:=produto_nome;
+          gdProduto.Cells[1, y]:=produto_group;
+          gdProduto.Cells[2, y]:=produto_ean;
+          y:=y+1;
+          Arquivo.add(Dados);
+
+        end;
+        end;
+      if Obj.has('next') then
+      begin
+        host:=Obj.getString('next');
+      end else
+      begin
+        host:='null';
+      end;
+    finally
+      FreeAndNil(Obj);
+    end;
+  until (host = 'null') or (host = '');
+end;
+
+procedure TForm1.ExecutarClick(Sender: TObject);
+var
+  host,Auth2,resposta:String;
+  Obj: TJSONObject;
+  Response:iHTTPResponse;
+  Body:TJSONObject;
+  i:integer;
+  PRD:TStringList;
+  SS:TStringStream;
+begin
+  Body:=TJSONObject.create;
+  PRD:=TStringList.Create;
+  try
+    PRD.Assign(memImport.lines);
+    Body.put('integracaoId',edtIntegrationID.text);
+    Body.put('codigosExternos',TJSONArray.create);
+    host:='https://web.alternativa.net.br/api/catalogo/anuncio/import';
+    for I := 0 to PRD.Count-1 do
+    begin
+      Body.getJSONArray('codigosExternos').put(i,PRD[i]);
+    end;
+    SS:=TStringStream.Create(Body.toString);
+    NetHTTPClient1.ContentType:='application/json';
+    Response:=NetHTTPClient1.Patch(host,SS);
+    if response.StatusCode = 200 then
+    begin
+      lblStatus.Caption:='Status:' +response.StatusCode.ToString+'- Ok';
+    end
+    else
+    lblStatus.Caption:='Status:' +response.StatusCode.ToString;
+  finally
+    FreeAndNil(Body);
+    FreeAndNil(PRD);
+  end;
+end;
+
+procedure TForm1.btnLimparClick(Sender: TObject);
+var
+  clear: Integer;
+  host,Auth,count,resposta:string;
+  obj:TJSONObject;
+  response:IHTTPResponse;
+begin
+  Auth:='JWT '+edtOlistAuth.Text;
+  NetHTTPClient1.CustomHeaders['Authorization']:=Auth;
+  host:='http://partners-api.olist.com/v1/seller-products/';
+  Response:=NetHTTPClient1.Get(host);
+  Resposta:=Response.ContentAsString;
+  Obj:=TJSONObject.create(Resposta);
+  count:=obj.getString('count');
+  for clear := 0 to gdPRODUTO.ColCount - 1 do
+    gdProduto.Cols[clear].Clear;
+    gdProduto.RowCount:=count.ToInteger;
+
+end;
+
+procedure TForm1.PageControl1Change(Sender: TObject);
+begin
+  gdStatus.Cells[0,0]:='1';
+  gdStatus.Cells[0,1]:='2';
+  gdStatus.Cells[0,2]:='3';
+  gdStatus.Cells[0,3]:='4';
+  gdStatus.Cells[0,4]:='5';
+  gdStatus.Cells[0,5]:='6';
+  gdStatus.Cells[0,6]:='7';
+  gdStatus.Cells[0,7]:='8';
+  gdStatus.Cells[0,8]:='9';
+  gdStatus.Cells[0,9]:='10';
+  gdStatus.Cells[0,10]:='11';
+  gdStatus.Cells[0,11]:='12';
+  gdStatus.Cells[0,12]:='13';
+  gdStatus.Cells[0,13]:='14';
+  gdStatus.Cells[0,14]:='15';
+  gdStatus.Cells[0,15]:='16';
+  gdStatus.Cells[0,16]:='17';
+  gdStatus.Cells[0,17]:='18';
+  gdStatus.Cells[0,18]:='19';
+  gdStatus.Cells[0,19]:='20';
+  gdStatus.Cells[0,20]:='21';
+  gdStatus.Cells[0,21]:='22';
+  gdStatus.Cells[0,22]:='23';
+  gdStatus.Cells[1,0]:='Aguardando captura';
+  gdStatus.Cells[1,1]:='Aguardando verificacao';
+  gdStatus.Cells[1,2]:='Aguardando pagamento';
+  gdStatus.Cells[1,3]:='Pagamento nao selecionado';
+  gdStatus.Cells[1,4]:='Transacao nao finalizada';
+  gdStatus.Cells[1,5]:='Financiamento nao finalizado';
+  gdStatus.Cells[1,6]:='Boleto nao gerado';
+  gdStatus.Cells[1,7]:='Transferencia nao concluida';
+  gdStatus.Cells[1,8]:='Cancelado pelo cliente';
+  gdStatus.Cells[1,9]:='Cancelado pela loja';
+  gdStatus.Cells[1,10]:='A enviar';
+  gdStatus.Cells[1,11]:='Enviado';
+  gdStatus.Cells[1,12]:='Finalizado';
+  gdStatus.Cells[1,13]:='Nota Fiscal Emitida';
+  gdStatus.Cells[1,14]:='Em compra';
+  gdStatus.Cells[1,15]:='Aguardando estoque';
+  gdStatus.Cells[1,16]:='Estornado';
+  gdStatus.Cells[1,17]:='Central de Trocas';
+  gdStatus.Cells[1,18]:='Em Conflito/Disputa';
+  gdStatus.Cells[1,19]:='Retornado';
+  gdStatus.Cells[1,20]:='Aguardando dados de entrega';
+  gdStatus.Cells[1,21]:='Congelado';
+  gdStatus.Cells[1,22]:='Em analise';
+end;
+
+
+
+{$ENDREGION}
+
+
+END.
+
+
