@@ -166,7 +166,7 @@ procedure TForm1.btnEnviarClick(Sender: TObject);
   I,x,y,Paginas,Incremento, linha:Integer;
   cabecalho: Boolean;
   pJsonObj: TJSONObject;
-
+  SS: TStringStream;
 begin
   ListaCodigos := TStringList.Create;
   description := '';
@@ -536,9 +536,15 @@ begin
 
   if rdrTipoGrade.Checked then
   begin
-    MemoResposta.Lines.Add('TipoGradeId;NomeTipoGrade;GradeId;NomeGrade');
-    Incremento := 0;
-    Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/variations?gumgaToken='+edtToken.Text+'&offset='+IntToStr(Incremento)+'&limit=100' );
+    SS := TStringStream.Create('',TEncoding.UTF8);
+    try
+      MemoResposta.Lines.Add('TipoGradeId;NomeTipoGrade;GradeId;NomeGrade');
+      Incremento := 0;
+      IdHTTP1.get('http://api.anymarket.com.br/v2/variations?gumgaToken='+edtToken.Text+'&offset='+IntToStr(Incremento)+'&limit=100', SS);
+      Resposta := SS.DataString;
+    finally
+      SS.Free;
+    end;
     JSONobj := TJSONObject.create(Resposta);
     for x := 0 to JSONobj.getJSONArray('content').length - 1 do
     begin
