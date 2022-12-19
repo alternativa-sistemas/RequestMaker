@@ -61,11 +61,11 @@ object Form1: TForm1
         OnClick = btnSalvarClick
       end
       object chkNome: TCheckBox
-        Left = 770
-        Top = 79
-        Width = 53
+        Left = 742
+        Top = 78
+        Width = 80
         Height = 17
-        Caption = 'Nomes?'
+        Caption = 'Completo?'
         TabOrder = 2
         Visible = False
       end
@@ -154,16 +154,8 @@ object Form1: TForm1
         Top = 80
         Width = 113
         Height = 17
-        Caption = 'TipoGrade'
+        Caption = 'TipoGrade/Grades'
         TabOrder = 12
-      end
-      object rdrGrades: TRadioButton
-        Left = 504
-        Top = 80
-        Width = 113
-        Height = 17
-        Caption = 'Grades'
-        TabOrder = 13
       end
     end
     object TabSkyhub: TTabSheet
@@ -384,15 +376,11 @@ object Form1: TForm1
     Top = 200
     Width = 1117
     Height = 545
-    ActivePage = Anuncios
+    ActivePage = Dados
     TabOrder = 1
     OnChange = PageControl1Change
     object Dados: TTabSheet
       Caption = 'Dados'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Button1: TButton
         Left = 223
         Top = 0
@@ -425,6 +413,10 @@ object Form1: TForm1
     object Anuncios: TTabSheet
       Caption = 'Anuncios'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object gdProduto: TStringGrid
         Left = 3
         Top = 3
@@ -435,7 +427,6 @@ object Form1: TForm1
         FixedCols = 0
         RowCount = 177
         FixedRows = 0
-        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSizing, goColSizing, goRowMoving, goColMoving, goEditing, goRowSelect, goFixedRowDefAlign]
         TabOrder = 0
       end
       object memImport: TMemo
@@ -462,13 +453,13 @@ object Form1: TForm1
         FixedCols = 0
         RowCount = 23
         FixedRows = 0
-        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing, goFixedRowDefAlign]
         TabOrder = 0
       end
     end
   end
   object IdHTTP1: TIdHTTP
     IOHandler = IdSSLIOHandlerSocketOpenSSL1
+    AllowCookies = True
     HandleRedirects = True
     ProxyParams.BasicAuthentication = False
     ProxyParams.ProxyPort = 0
@@ -498,8 +489,12 @@ object Form1: TForm1
     Top = 608
   end
   object NetHTTPClient1: TNetHTTPClient
+    Asynchronous = False
+    ConnectionTimeout = 60000
+    ResponseTimeout = 60000
+    HandleRedirects = True
+    AllowCookies = True
     UserAgent = 'Embarcadero URI Client/1.0'
-    SecureProtocols = [SSL2, SSL3, TLS1, TLS11, TLS12, TLS13]
     OnAuthEvent = NetHTTPClient1AuthEvent
     Left = 1065
     Top = 636

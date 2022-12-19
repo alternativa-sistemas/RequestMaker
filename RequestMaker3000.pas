@@ -7,10 +7,9 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, IdIOHandler, IdIOHandlerSocket,JSON.Utils,
   IdIOHandlerStack, IdSSL, IdSSLOpenSSL, IdBaseComponent, IdComponent,
   IdTCPConnection, IdTCPClient, IdHTTP, Vcl.StdCtrls, uJson, Vcl.ComCtrls,
-  Vcl.ExtCtrls, IdIntercept, Vcl.Grids, RzGrids,System.Net.URLClient, System.Net.HttpClient, System.Net.HttpClientComponent,
+  Vcl.ExtCtrls, IdIntercept, Vcl.Grids,System.Net.URLClient, System.Net.HttpClient, System.Net.HttpClientComponent,
   REST.Types, REST.Client, REST.Authenticator.Basic, Data.Bind.Components,IOUtils,
   Data.Bind.ObjectScope;
-
 
 type
   TForm1 = class(TForm)
@@ -41,7 +40,6 @@ type
     edtAplicacao: TEdit;
     btnEnviarLI: TButton;
     rdrTipoGrade: TRadioButton;
-    rdrGrades: TRadioButton;
     rdrProdutoLI: TRadioButton;
     rdrFoto: TRadioButton;
     Button2: TButton;
@@ -159,13 +157,16 @@ End;
 
 procedure TForm1.btnEnviarClick(Sender: TObject);
   var
-  Resposta,IdImg, description,SkuID, VarId, FabId, FabName, url, ProId, CatId, CatNome,
+  Resposta,IdImg, description,description1,SkuID, NomeTipoGrade, IdTipoGrade, VarId,VarId1,VarImage, principal, index, FabId, FabName, url, ProId, CatId, CatNome,
   ChaveApi, aplicacao, ProNome, NomeGrade, IdGrade, PrecoDe, PrecoPor, ProBarra, PartnerId, Peso, Altura, Largura,Profundidade,
-  Path, Modelo:string;
+  Path, Modelo, ProDescr, NBMId, Gender, WarrantyText, OriginId, WarrantyTime, PriceFactor,Ean:string;
   JSON: TJSONArray;
   JSONobj: TJSONObject;
   ListaCodigos: TStringList;
-  I,x,Paginas,Incremento, linha:Integer;
+  I,x,y,Paginas,Incremento, linha:Integer;
+  cabecalho: Boolean;
+  pJsonObj: TJSONObject;
+
 begin
   ListaCodigos := TStringList.Create;
   description := '';
@@ -174,6 +175,7 @@ begin
 
   if rdrProduto.Checked then
   begin
+    cabecalho := False;
     Incremento := 0;
     url:='';
     Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/products?gumgaToken='+edtToken.Text);
@@ -183,16 +185,20 @@ begin
     finally
       FreeAndNil(JSONobj);
     end;
-
     for I := 0 to Paginas - 1 do
     begin
       url:='http://api.anymarket.com.br/v2/products?gumgaToken='+edtToken.Text+'&offset='+IntToStr(Incremento)+'&limit=100';
       Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/products?gumgaToken='+edtToken.Text+'&offset='+IntToStr(Incremento)+'&limit=100' );
       JSONobj := TJSONObject.create(Resposta);
       if chkNome.Checked = true then
-      BEGIN
-      if JSONobj.has('content') then
+      begin
+        if JSONobj.has('content') then
         begin
+          if cabecalho = False then
+          begin
+            MemoResposta.Lines.Add('ID;TITLE;DESCRIPTION;IDdaCATEGORIA;IDdaMARCA;NBM>ID;ORIGIN>ID;MODEL;GENDER;WARRANTYTIME;WARRANTYTEXT;HEIGHT;WIDTH;WEIGHT;LENGTH;PRICEFACTOR');
+            cabecalho := True;
+          end;
           Incremento := Incremento+100;
           for x := 0 to JSONobj.getJSONArray('content').length - 1 do
           begin
@@ -204,15 +210,17 @@ begin
             if JSONobj.getJSONArray('content').getJSONObject(x).has('model') then
             begin
               Modelo := UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('model'));
-            end else
-            Begin
+            end
+            else
+            begin
               Modelo := '';
-            End;
+            end;
               ProNome := UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('title'));
             if JSONobj.getJSONArray('content').getJSONObject(x).has('category') then
             begin
               CatId:= UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getJSONObject('category').getString('id'));
-            end else
+            end
+            else
             begin
               CatId:= 'Item não possui Categoria';
             end;
@@ -224,28 +232,92 @@ begin
             begin
               FabId:='Item não possui Marca';
             end;
-            MemoResposta.Lines.Add(ProId+' | '+ ProNome+' | '+FabID +' | '+ CatId + ' | ' + Peso +' | '+ Altura +' | '+ Largura +' | '+ Profundidade +' | '+ Modelo);
-            MemoResposta.Lines.SaveToFile('C:\Teste\Produtos.txt');
+            if JSONobj.getJSONArray('content').getJSONObject(x).has('nbm') then
+            begin
+              NBMId:= UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getJSONObject('nbm').getString('id'));
+            end
+            else
+            begin
+              NBMId:='Não possui Ncm';
+            end;
+            if JSONobj.getJSONArray('content').getJSONObject(x).has('origin') then
+            begin
+              OriginId:= UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getJSONObject('origin').getString('id'));
+            end
+            else
+            begin
+              OriginId:='Não possui Origem';
+            end;
+            if JSONobj.getJSONArray('content').getJSONObject(x).has('gender') then
+            begin
+              Gender:= UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('gender'));
+            end
+            else
+            begin
+              Gender:='Não possui Genero';
+            end;
+            if JSONobj.getJSONArray('content').getJSONObject(x).has('warrantyTime') then
+            begin
+              WarrantyTime:= UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('warrantyTime'));
+            end
+            else
+            begin
+              WarrantyTime:='Não possui Tempo de Garantia';
+            end;
+            if JSONobj.getJSONArray('content').getJSONObject(x).has('warrantyText') then
+            begin
+              WarrantyText:= UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('warrantyText'));
+            end
+            else
+            begin
+              WarrantyText:='Não possui Termo de Garantia';
+            end;
+            if JSONobj.getJSONArray('content').getJSONObject(x).has('priceFactor') then
+            begin
+              PriceFactor:= UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('priceFactor'));
+            end
+            else
+            begin
+              PriceFactor:='Não possui preço do fabricante';
+            end;
+            if JSONobj.getJSONArray('content').getJSONObject(x).has('description') then
+            begin
+              ProDescr:= UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('description'));
+              ProDescr:= StringReplace(ProDescr, ';', '.', [rfReplaceAll]);
+            end
+            else
+            begin
+              ProDescr:='Não possui Descrição';
+            end;
+            MemoResposta.Lines.Add(ProId+' ; '+ProNome+' ; '+ProDescr +' ; ' + CatId + ' ; '+FabID +' ; ' +NBMId+' ; '+OriginId+' ; '+ Modelo +' ; '+Gender+' ; '+WarrantyTime+' ; '+WarrantyText+' ; '+ Altura +' ; '+ Largura +' ; '+ Peso +' ; '+ Profundidade +' ; '+PriceFactor+' ; ');
+            MemoResposta.Lines.SaveToFile('C:\Teste\Produtos.csv');
           end;
-        END
-      end else
-      BEGIN
+        end;
+      end
+      else
+      begin
        IF JSONobj.has('content') then
-        begin
+       begin
+          if cabecalho = False then
+          begin
+            MemoResposta.Lines.Add('ID;');
+            cabecalho := True;
+          end;
           Incremento := Incremento+100;
           for x := 0 to JSONobj.getJSONArray('content').length - 1 do
           begin
             ProId := JSONobj.getJSONArray('content').getJSONObject(x).getString('id');
             MemoResposta.Lines.Add(ProId+',');
-            MemoResposta.Lines.SaveToFile('C:\Teste\Produtos.txt');
+            MemoResposta.Lines.SaveToFile('C:\Teste\Produtos.csv');
           end;
-        end;
+       end;
       end;
     end;
   end;
 
   IF rdrSkus.Checked = True then
   begin
+    cabecalho := False;
     linha:=0;
     for I := 0 to ListaCodigos.Count -1 do
     begin
@@ -254,25 +326,48 @@ begin
         try
           Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/products/'+ListaCodigos[i]+'/skus?gumgaToken='+edtToken.Text+'' );
           JSON := TJSONArray.Create(Resposta);
+          if cabecalho = False then
+              begin
+                MemoResposta.Lines.Add('ID do Produto;ID do Sku;Nome do Sku;Preço DE;Preço POR;ID da VariaçãoX;ID da Variação Y;Partner Id;Nome grade X;Nome grade Y;EAN');
+                cabecalho := True;
+              end;
           for x := 0 to JSON.length -1 do
           begin
             IF JSON.getJSONObject(0).has('variations') then
             begin
-              description:=UTF8ToString(JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('description'));
-              VarId:=JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('id');
-              ProNome:=UTF8ToString(JSON.getJSONObject(x).getString('title'));
-              PrecoDe:=JSON.getJSONObject(x).getString('price');
-              PrecoPor:=JSON.getJSONObject(x).getString('sellprice');
-              if JSON.getJSONObject(x).has('PartnerID') then
+              if JSON.getJSONObject(x).has('partnerId') then
+                begin
+                  PartnerId:=JSON.getJSONObject(x).getString('partnerId');
+                end else
+                begin
+                  PartnerId:= '';
+                end;
+              if (JSON.getJSONObject(x).getJSONArray('variations').length = 2 ) then
               begin
-                PartnerId:=JSON.getJSONObject(x).getString('PartnerID');
-              end else
+                SkuID:=JSON.getJSONObject(x).getString('id');
+                description:=UTF8ToString(JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('description'));
+                VarId:=JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('id');
+                description1:=UTF8ToString(JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(1).getString('description'));
+                VarId1:=JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(1).getString('id');
+                ProNome:=UTF8ToString(JSON.getJSONObject(x).getString('title'));
+                PrecoDe:=JSON.getJSONObject(x).getString('price');
+                PrecoPor:=JSON.getJSONObject(x).getString('sellprice');
+                Ean:=JSON.getJSONObject(x).getString('ean');
+                MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+ SkuID + ' ; '+ProNome+' ; '+PrecoDe+' ; '+PrecoPor+' ; '+VarId+' ; '+VarId1+' ; '+PartnerId + ' ; ' +description+' ; '+description1+' ; '+Ean);
+              end
+              else
               begin
-                PartnerId:= '';
+                description:=UTF8ToString(JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('description'));
+                VarId:=JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('id');
+                ProNome:=UTF8ToString(JSON.getJSONObject(x).getString('title'));
+                PrecoDe:=JSON.getJSONObject(x).getString('price');
+                PrecoPor:=JSON.getJSONObject(x).getString('sellprice');
+                SkuID:=JSON.getJSONObject(x).getString('id');
+                Ean:=JSON.getJSONObject(x).getString('ean');
+                VarId1:='Sem Variação Y';
+                description1:='Sem Variação Y';
+                MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+ SkuID + ' ; '+ProNome+' ; '+PrecoDe+' ; '+PrecoPor+' ; '+VarId+' ; '+VarId1+' ; '+PartnerId + ' ; ' +description+' ; '+description1+' ; '+Ean);
               end;
-              SkuID:=JSON.getJSONObject(x).getString('id');
-              MemoResposta.Lines.Add(ListaCodigos[I]+' | '+ SkuID + ' | '+ProNome+' | '+PrecoDe+' | '+PrecoPor+' | '+VarId+' | '+PartnerId + ' | ' +description);
-              MemoResposta.Lines.SaveToFile('C:\Teste\Skus.txt');
             end else
             begin
               Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/products/'+ListaCodigos[i]+'/skus?gumgaToken='+edtToken.Text+'' );
@@ -282,9 +377,14 @@ begin
               PrecoPor:=JSON.getJSONObject(x).getString('sellprice');
               PartnerId:=JSON.getJSONObject(x).getString('PartnerID');
               SkuID:=JSON.getJSONObject(x).getString('id');
-              MemoResposta.Lines.Add(ListaCodigos[I]+' | '+ SkuID +' | '+ProNome +' | '+PrecoDe +' | '+PrecoPor+' | '+ 'Sem Variação' +' | '+PartnerId);
-              MemoResposta.Lines.SaveToFile('C:\Teste\Skus.txt');
+              Ean:=JSON.getJSONObject(x).getString('ean');
+              VarId:='Sem Variação X';
+              description:='Sem Variação X';
+              VarId1:='Sem Variação Y';
+              description1:='Sem Variação Y';
+              MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+ SkuID + ' ; '+ProNome+' ; '+PrecoDe+' ; '+PrecoPor+' ; '+VarId+' ; '+VarId1+' ; '+PartnerId + ' ; ' +description+' ; '+description1+' ; '+Ean);
             end;
+          MemoResposta.Lines.SaveToFile('C:\Teste\Skus.csv');
           end;
         except
           on e:exception do
@@ -434,49 +534,50 @@ begin
     end;
   end;
 
-  IF rdrTipoGrade.Checked then
+  if rdrTipoGrade.Checked then
   begin
+    MemoResposta.Lines.Add('TipoGradeId;NomeTipoGrade;GradeId;NomeGrade');
     Incremento := 0;
     Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/variations?gumgaToken='+edtToken.Text+'&offset='+IntToStr(Incremento)+'&limit=100' );
     JSONobj := TJSONObject.create(Resposta);
     for x := 0 to JSONobj.getJSONArray('content').length - 1 do
     begin
-      IdGrade := JSONobj.getJSONArray('content').getJSONObject(x).getString('id');
-      NomeGrade := UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('name'));
-      MemoResposta.Lines.Add(IdGrade +' | '+ NomeGrade);
-      MemoResposta.Lines.SaveToFile('C:\Teste\Tipo_grade.txt');
-      Incremento := Incremento + 100;
-    end;
-  end;
-
-  IF rdrGrades.Checked then
-  begin
-    for I := 0 to ListaCodigos.Count -1 do
+      pJsonObj := JSONobj.getJSONArray('content').getJSONObject(x);
+      for y := 0 to pJsonObj.getJSONArray('values').length -1 do
       begin
-      Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/variations/'+ListaCodigos[I]+'?gumgaToken='+edtToken.Text);
-      JSONobj := TJSONObject.create(Resposta);
-      for x := 0 to JSONobj.getJSONArray('values').length -1 do
-      begin
-        IdGrade := JSONobj.getJSONArray('values').getJSONObject(x).getString('id');
-        NomeGrade := UTF8ToString(JSONobj.getJSONArray('values').getJSONObject(x).getString('description'));
-        MemoResposta.Lines.Add(ListaCodigos[I] + ' | ' + IdGrade +' | '+ NomeGrade);
-        MemoResposta.Lines.SaveToFile('C:\Teste\Grade.txt');
+        IdTipoGrade := pJsonObj.getString('id');
+        NomeTipoGrade := (pJsonObj.getString('name'));
+        IdGrade := pJsonObj.getJSONArray('values').getJSONObject(y).getString('id');
+        NomeGrade := (pJsonObj.getJSONArray('values').getJSONObject(y).getString('description'));
+        MemoResposta.Lines.Add(IdTipoGrade+' ; '+NomeTipoGrade + ' ; ' + IdGrade +' ; '+ NomeGrade);
       end;
     end;
+    MemoResposta.Lines.SaveToFile('C:\Teste\TipoGrades.csv');
   end;
 
   IF rdrImages.Checked = True then
   for I := 0 to ListaCodigos.Count -1 do
   begin
+    MemoResposta.Lines.Add('ID do Produto;ID Imagem;Principal?;Index;Variation;Url');
     Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/products/'+ListaCodigos[i]+'/images?gumgaToken='+edtToken.Text+'' );
     JSON := TJSONArray.Create(Resposta);
     for x := 0 to JSON.length -1 do
     begin
-      IdImg := JSON.getJSONObject(x).getString('id');
-      url := JSON.getJSONObject(x).getString('url');
-      MemoResposta.Lines.Add(ListaCodigos[I] + ' | '+IdImg+' | '+url);
+      IF JSON.getJSONObject(0).has('variation') then
+      begin
+        IdImg := JSON.getJSONObject(x).getString('id');
+        url := JSON.getJSONObject(x).getString('url');
+        VarImage := JSON.getJSONObject(x).getString('variation');
+        principal := JSON.getJSONObject(x).getString('main');
+        index := JSON.getJSONObject(x).getString('index');
+        MemoResposta.Lines.Add(ListaCodigos[I] + ' ; '+IdImg+' ; '+principal+' ; '+index+' ; '+VarImage+' ; '+url);
+      end
+      else
+      begin
+
+      end;
     end;
-   MemoResposta.Lines.SaveToFile('C:\Teste\Urls.txt');
+   MemoResposta.Lines.SaveToFile('C:\Teste\Urls.csv');
   end;
 end;
 
