@@ -118,6 +118,7 @@ begin
   Anuncios.tabvisible:=False;
   Status.TabVisible:=False;
   Arquivo:=TStringList.Create;
+  ForceDirectories('C:/Teste');
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
@@ -177,8 +178,13 @@ begin
   begin
     cabecalho := False;
     Incremento := 0;
-    url:='';
-    Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/products?gumgaToken='+edtToken.Text);
+    SS := TStringStream.Create('', TEncoding.UTF8);
+    try
+      IdHTTP1.get('http://api.anymarket.com.br/v2/products?gumgaToken='+edtToken.Text, SS);
+      Resposta := (SS.DataString);
+    finally
+      SS.Free;
+    end;
     JSONobj := TJSONObject.create(Resposta);
     try
       Paginas :=  JSONobj.getJSONObject('page').getInt('totalPages');
@@ -186,9 +192,15 @@ begin
       FreeAndNil(JSONobj);
     end;
     for I := 0 to Paginas - 1 do
+//    for I := 0 to 0 do
     begin
-      url:='http://api.anymarket.com.br/v2/products?gumgaToken='+edtToken.Text+'&offset='+IntToStr(Incremento)+'&limit=100';
-      Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/products?gumgaToken='+edtToken.Text+'&offset='+IntToStr(Incremento)+'&limit=100' );
+      SS := TStringStream.Create('', TEncoding.UTF8);
+      try
+        IdHTTP1.get('http://api.anymarket.com.br/v2/products?gumgaToken='+edtToken.Text+'&offset='+IntToStr(Incremento)+'&limit=100', SS);
+        Resposta := (SS.DataString);
+      finally
+        SS.Free;
+      end;
       JSONobj := TJSONObject.create(Resposta);
       if chkNome.Checked = true then
       begin
@@ -209,16 +221,16 @@ begin
             Profundidade := JSONobj.getJSONArray('content').getJSONObject(x).getString('length');
             if JSONobj.getJSONArray('content').getJSONObject(x).has('model') then
             begin
-              Modelo := UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('model'));
+              Modelo := (JSONobj.getJSONArray('content').getJSONObject(x).getString('model'));
             end
             else
             begin
               Modelo := '';
             end;
-              ProNome := UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('title'));
+              ProNome := (JSONobj.getJSONArray('content').getJSONObject(x).getString('title'));
             if JSONobj.getJSONArray('content').getJSONObject(x).has('category') then
             begin
-              CatId:= UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getJSONObject('category').getString('id'));
+              CatId:= (JSONobj.getJSONArray('content').getJSONObject(x).getJSONObject('category').getString('id'));
             end
             else
             begin
@@ -226,7 +238,7 @@ begin
             end;
             if JSONobj.getJSONArray('content').getJSONObject(x).has('brand') then
             begin
-              FabId:= UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getJSONObject('brand').getString('id'));
+              FabId:= (JSONobj.getJSONArray('content').getJSONObject(x).getJSONObject('brand').getString('id'));
             end
             else
             begin
@@ -234,7 +246,7 @@ begin
             end;
             if JSONobj.getJSONArray('content').getJSONObject(x).has('nbm') then
             begin
-              NBMId:= UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getJSONObject('nbm').getString('id'));
+              NBMId:= (JSONobj.getJSONArray('content').getJSONObject(x).getJSONObject('nbm').getString('id'));
             end
             else
             begin
@@ -242,7 +254,7 @@ begin
             end;
             if JSONobj.getJSONArray('content').getJSONObject(x).has('origin') then
             begin
-              OriginId:= UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getJSONObject('origin').getString('id'));
+              OriginId:= (JSONobj.getJSONArray('content').getJSONObject(x).getJSONObject('origin').getString('id'));
             end
             else
             begin
@@ -250,7 +262,7 @@ begin
             end;
             if JSONobj.getJSONArray('content').getJSONObject(x).has('gender') then
             begin
-              Gender:= UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('gender'));
+              Gender:= (JSONobj.getJSONArray('content').getJSONObject(x).getString('gender'));
             end
             else
             begin
@@ -258,7 +270,7 @@ begin
             end;
             if JSONobj.getJSONArray('content').getJSONObject(x).has('warrantyTime') then
             begin
-              WarrantyTime:= UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('warrantyTime'));
+              WarrantyTime:= (JSONobj.getJSONArray('content').getJSONObject(x).getString('warrantyTime'));
             end
             else
             begin
@@ -266,7 +278,7 @@ begin
             end;
             if JSONobj.getJSONArray('content').getJSONObject(x).has('warrantyText') then
             begin
-              WarrantyText:= UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('warrantyText'));
+              WarrantyText:= (JSONobj.getJSONArray('content').getJSONObject(x).getString('warrantyText'));
             end
             else
             begin
@@ -274,7 +286,7 @@ begin
             end;
             if JSONobj.getJSONArray('content').getJSONObject(x).has('priceFactor') then
             begin
-              PriceFactor:= UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('priceFactor'));
+              PriceFactor:= (JSONobj.getJSONArray('content').getJSONObject(x).getString('priceFactor'));
             end
             else
             begin
@@ -282,7 +294,7 @@ begin
             end;
             if JSONobj.getJSONArray('content').getJSONObject(x).has('description') then
             begin
-              ProDescr:= UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('description'));
+              ProDescr:= (JSONobj.getJSONArray('content').getJSONObject(x).getString('description'));
               ProDescr:= StringReplace(ProDescr, ';', '.', [rfReplaceAll]);
             end
             else
@@ -324,32 +336,38 @@ begin
       IF chkNome.Checked then
         begin
         try
-          Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/products/'+ListaCodigos[i]+'/skus?gumgaToken='+edtToken.Text+'' );
+          SS := TStringStream.Create('', TEncoding.UTF8);
+          try
+            IdHTTP1.get('http://api.anymarket.com.br/v2/products/'+ListaCodigos[i]+'/skus?gumgaToken='+edtToken.Text+'', SS);
+            Resposta := SS.DataString;
+          finally
+            SS.Free;
+          end;
           JSON := TJSONArray.Create(Resposta);
           if cabecalho = False then
-              begin
-                MemoResposta.Lines.Add('ID do Produto;ID do Sku;Nome do Sku;Preço DE;Preço POR;ID da VariaçãoX;ID da Variação Y;Partner Id;Nome grade X;Nome grade Y;EAN');
-                cabecalho := True;
-              end;
+          begin
+            MemoResposta.Lines.Add('ID do Produto;ID do Sku;Nome do Sku;Preço DE;Preço POR;ID da VariaçãoX;ID da Variação Y;Partner Id;Nome grade X;Nome grade Y;EAN');
+            cabecalho := True;
+          end;
           for x := 0 to JSON.length -1 do
           begin
             IF JSON.getJSONObject(0).has('variations') then
             begin
               if JSON.getJSONObject(x).has('partnerId') then
-                begin
-                  PartnerId:=JSON.getJSONObject(x).getString('partnerId');
-                end else
-                begin
-                  PartnerId:= '';
-                end;
+              begin
+                PartnerId:=JSON.getJSONObject(x).getString('partnerId');
+              end else
+              begin
+                PartnerId:= '';
+              end;
               if (JSON.getJSONObject(x).getJSONArray('variations').length = 2 ) then
               begin
                 SkuID:=JSON.getJSONObject(x).getString('id');
-                description:=UTF8ToString(JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('description'));
+                description:=(JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('description'));
                 VarId:=JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('id');
-                description1:=UTF8ToString(JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(1).getString('description'));
+                description1:=(JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(1).getString('description'));
                 VarId1:=JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(1).getString('id');
-                ProNome:=UTF8ToString(JSON.getJSONObject(x).getString('title'));
+                ProNome:=(JSON.getJSONObject(x).getString('title'));
                 PrecoDe:=JSON.getJSONObject(x).getString('price');
                 PrecoPor:=JSON.getJSONObject(x).getString('sellprice');
                 Ean:=JSON.getJSONObject(x).getString('ean');
@@ -357,9 +375,9 @@ begin
               end
               else
               begin
-                description:=UTF8ToString(JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('description'));
+                description:=(JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('description'));
                 VarId:=JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('id');
-                ProNome:=UTF8ToString(JSON.getJSONObject(x).getString('title'));
+                ProNome:=(JSON.getJSONObject(x).getString('title'));
                 PrecoDe:=JSON.getJSONObject(x).getString('price');
                 PrecoPor:=JSON.getJSONObject(x).getString('sellprice');
                 SkuID:=JSON.getJSONObject(x).getString('id');
@@ -370,9 +388,15 @@ begin
               end;
             end else
             begin
-              Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/products/'+ListaCodigos[i]+'/skus?gumgaToken='+edtToken.Text+'' );
+              SS := TStringStream.Create('', TEncoding.UTF8);
+              try
+                IdHTTP1.get('http://api.anymarket.com.br/v2/products/'+ListaCodigos[i]+'/skus?gumgaToken='+edtToken.Text+'', SS);
+                Resposta := SS.DataString;
+              finally
+                SS.Free;
+              end;
               JSON := TJSONArray.Create(Resposta);
-              ProNome:=UTF8ToString(JSON.getJSONObject(x).getString('title'));
+              ProNome:=(JSON.getJSONObject(x).getString('title'));
               PrecoDe:=JSON.getJSONObject(x).getString('price');
               PrecoPor:=JSON.getJSONObject(x).getString('sellprice');
               PartnerId:=JSON.getJSONObject(x).getString('PartnerID');
@@ -396,13 +420,19 @@ begin
       ELSE
         begin
         try
-        Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/products/'+ListaCodigos[i]+'/skus?gumgaToken='+edtToken.Text+'' );
+        SS := TStringStream.Create('', TEncoding.UTF8);
+        try
+          IdHTTP1.get('http://api.anymarket.com.br/v2/products/'+ListaCodigos[i]+'/skus?gumgaToken='+edtToken.Text+'', SS);
+          Resposta := SS.DataString;
+        finally
+          SS.Free;
+        end;
         JSON := TJSONArray.Create(Resposta);
         for x := 0 to JSON.length -1 do
           begin
             IF JSON.getJSONObject(0).has('variations') then
             begin
-              description:=UTF8ToString(JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('description'));
+              description:=(JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('description'));
               VarId:=JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('id');
               SkuID := JSON.getJSONObject(x).getString('id');
               MemoResposta.Lines.Add(ListaCodigos[I]+' | '+ SkuId +' | '+description + ' | '+VarId);
@@ -429,16 +459,24 @@ begin
   IF rdrFab.Checked = True then
   begin
     Incremento := 0;
-    url := '';
-    Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/brands?gumgaToken='+edtToken.Text+'&offset='+IntToStr(Incremento)+'&limit=100');
+    SS := TStringStream.Create('');
+    try
+      IdHTTP1.get('http://api.anymarket.com.br/v2/brands?gumgaToken='+edtToken.Text+'&offset='+IntToStr(Incremento)+'&limit=100', SS);
+      Resposta := (SS.DataString);
+    finally
+      SS.Free;
+    end;
     JSONobj:= TJSONObject.Create(Resposta);
-
     try
       Paginas :=  JSONobj.getJSONObject('page').getInt('totalPages');
     finally
       FreeAndNil(JSONobj);
     end;
-
+    if cabecalho = False then
+    begin
+      MemoResposta.Lines.Add('ID do Fabricante;Nome do Fabricante');
+      cabecalho := True;
+    end;
     for I := 0 to Paginas -1 do
     begin
       JSONobj := TJSONObject.create(Resposta);
@@ -447,17 +485,17 @@ begin
         for x := 0 to JSONobj.getJSONArray('content').length -1 do
         begin
           FabId:=JSONobj.getJSONArray('content').getJSONObject(x).getString('id');
-          FabName:=UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('name'));
-          MemoResposta.Lines.Add(FabId +' | '+FabName);
+          FabName:=(JSONobj.getJSONArray('content').getJSONObject(x).getString('name'));
+          MemoResposta.Lines.Add(FabId +' ; '+FabName);
           Incremento := Incremento + 100;
         end;
       end ELSE
         for x := 0 to JSONobj.getJSONArray('content').length -1 do
       begin
         FabId:=JSONobj.getJSONArray('content').getJSONObject(x).getString('id');
-        FabName:=UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('name'));
+        FabName:=(JSONobj.getJSONArray('content').getJSONObject(x).getString('name'));
         MemoResposta.Lines.Add(FabId+',');
-        MemoResposta.Lines.SaveToFile('C:\Teste\Fabricantes.txt');
+        MemoResposta.Lines.SaveToFile('C:\Teste\Fabricantes.csv');
         Incremento := Incremento + 100;
       end;
     end;
@@ -466,26 +504,42 @@ begin
   IF rdrCategorias.Checked = True then
   begin
     Incremento := 0;
-    Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/categories?gumgaToken='+edtToken.Text+'&offset='+IntToStr(Incremento)+'&limit=100' );
+    SS := TStringStream.Create('', TEncoding.UTF8);
+    try
+      IdHTTP1.get('http://api.anymarket.com.br/v2/categories?gumgaToken='+edtToken.Text+'&offset='+IntToStr(Incremento)+'&limit=100', SS);
+      Resposta := SS.DataString;
+    finally
+      SS.Free;
+    end;
     JSONobj := TJSONObject.create(Resposta);
     try
       IF not chkNome.Checked then
       begin
-      Incremento := Incremento+100;
+        if cabecalho = False then
+        begin
+        MemoResposta.Lines.Add('ID da Categoria');
+        cabecalho := True;
+        end;
+        Incremento := Incremento+100;
         for x := 0 to JSONobj.getJSONArray('content').length - 1 do
         begin
           CatId := JSONobj.getJSONArray('content').getJSONObject(x).getString('id');
           MemoResposta.Lines.Add(CatId+',');
-          MemoResposta.Lines.SaveToFile('C:\Teste\Categorias.txt');
+          MemoResposta.Lines.SaveToFile('C:\Teste\Categorias.csv');
         end;
       end else
       begin
+        if cabecalho = False then
+        begin
+        MemoResposta.Lines.Add('ID da Categoria;Nome da Categoria');
+        cabecalho := True;
+        end;
         for x := 0 to JSONobj.getJSONArray('content').length - 1 do
         begin
           CatId := JSONobj.getJSONArray('content').getJSONObject(x).getString('id');
-          CatNome := UTF8ToString(JSONobj.getJSONArray('content').getJSONObject(x).getString('name'));
-          MemoResposta.Lines.Add(CatId +'|'+CatNome);
-          MemoResposta.Lines.SaveToFile('C:\Teste\Categorias.txt');
+          CatNome := (JSONobj.getJSONArray('content').getJSONObject(x).getString('name'));
+          MemoResposta.Lines.Add(CatId +';'+CatNome);
+          MemoResposta.Lines.SaveToFile('C:\Teste\Categorias.csv');
         end;
       end;
     finally
@@ -496,7 +550,13 @@ begin
   IF rdrArvore.Checked = True then
   for I := 0 to ListaCodigos.Count -1 do
   begin
-    Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/categories/'+ListaCodigos[i]+'?gumgaToken='+edtToken.Text);
+    SS := TStringStream.Create('', TEncoding.UTF8);
+    try
+      IdHTTP1.get('http://api.anymarket.com.br/v2/categories/'+ListaCodigos[i]+'?gumgaToken='+edtToken.Text, SS);
+      Resposta := SS.DataString;
+    finally
+      SS.Free;
+    end;
     JSONobj := TJSONObject.Create(Resposta);
     IF chkNome.Checked then
       begin
@@ -505,15 +565,15 @@ begin
         for x := 0 to JSONobj.getJSONArray('children').Length -1 do
         begin
          CatId:= JSONobj.getJSONArray('children').getJSONObject(x).getString('id');
-         CatNome:= UTF8ToString(JSONobj.getJSONArray('children').getJSONObject(x).getString('name'));
-         Path:= UTF8ToString(JSONobj.getJSONArray('children').getJSONObject(x).getString('path'));
-         MemoResposta.Lines.Add(ListaCodigos[I]+' | '+ CatId +' | '+ CatNome + ' | ' + ListaCodigos[I]+'/'+CatId + ' | '+ Path);
+         CatNome:= (JSONobj.getJSONArray('children').getJSONObject(x).getString('name'));
+         Path:= (JSONobj.getJSONArray('children').getJSONObject(x).getString('path'));
+         MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+ CatId +' ; '+ CatNome + ' ; ' + ListaCodigos[I]+'/'+CatId + ' ; '+ Path);
         end;
-        MemoResposta.Lines.SaveToFile('C:\Teste\Arvore de Categorias.txt');
+        MemoResposta.Lines.SaveToFile('C:\Teste\Arvore de Categorias.csv');
       end
       ELSE
       begin
-        MemoResposta.Lines.Add(ListaCodigos[I]+' - Não tem subCategoria');
+        MemoResposta.Lines.Add(ListaCodigos[I]+'; Não tem subCategoria');
       end;
     end
     ELSE
@@ -523,13 +583,13 @@ begin
         for x := 0 to JSONobj.getJSONArray('children').Length -1 do
         begin
          CatId:= JSONobj.getJSONArray('children').getJSONObject(x).getString('id');
-         CatNome:= UTF8ToString(JSONobj.getJSONArray('children').getJSONObject(x).getString('name'));
+         CatNome:= (JSONobj.getJSONArray('children').getJSONObject(x).getString('name'));
          MemoResposta.Lines.Add(ListaCodigos[I]+' | '+ CatId);
         end;
-        MemoResposta.Lines.SaveToFile('C:\Teste\Arvore de Categorias.txt');
+        MemoResposta.Lines.SaveToFile('C:\Teste\Arvore de Categorias.csv');
       end else
       begin
-        MemoResposta.Lines.Add(ListaCodigos[I]+' - Não tem subCategoria');
+        MemoResposta.Lines.Add(ListaCodigos[I]+'; Não tem subCategoria');
       end;
     end;
   end;
@@ -564,19 +624,30 @@ begin
   IF rdrImages.Checked = True then
   for I := 0 to ListaCodigos.Count -1 do
   begin
-    MemoResposta.Lines.Add('ID do Produto;ID Imagem;Principal?;Index;Variation;Url');
-    Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/products/'+ListaCodigos[i]+'/images?gumgaToken='+edtToken.Text+'' );
+    if cabecalho = False then
+    begin
+      MemoResposta.Lines.Add('ID do Produto;ID Imagem;Principal?;Index;Variation;Url');
+      cabecalho := True;
+    end;
+    SS := TStringStream.Create('', TEncoding.UTF8);
+    try
+      IdHTTP1.get('http://api.anymarket.com.br/v2/products/'+ListaCodigos[i]+'/images?gumgaToken='+edtToken.Text, SS);
+      Resposta := SS.DataString;
+    finally
+      SS.Free;
+    end;
     JSON := TJSONArray.Create(Resposta);
     for x := 0 to JSON.length -1 do
     begin
       IF JSON.getJSONObject(0).has('variation') then
       begin
-        IdImg := JSON.getJSONObject(x).getString('id');
+        IdImg := StringReplace(JSON.getJSONObject(x).getString('id'),'"','',[rfReplaceAll]);
+        IdImg := StringReplace(IdImg,'.00','',[rfReplaceAll]);
         url := JSON.getJSONObject(x).getString('url');
         VarImage := JSON.getJSONObject(x).getString('variation');
         principal := JSON.getJSONObject(x).getString('main');
         index := JSON.getJSONObject(x).getString('index');
-        MemoResposta.Lines.Add(ListaCodigos[I] + ' ; '+IdImg+' ; '+principal+' ; '+index+' ; '+VarImage+' ; '+url);
+        MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+IdImg+' ; '+principal+' ; '+index+' ; '+VarImage+' ; '+url);
       end
       else
       begin
@@ -596,27 +667,27 @@ procedure TForm1.btnSalvarClick(Sender: TObject);
 begin
   IF rdrFab.Checked then
   begin
-    memoresposta.Lines.SaveToFile('C:\Teste/Fabricante.txt');
+    memoresposta.Lines.SaveToFile('C:\Teste/Fabricante.csv');
   end;
   IF rdrCategorias.Checked then
   begin
-    MemoResposta.Lines.SaveToFile('C:\Teste/Fabricante.txt');
+    MemoResposta.Lines.SaveToFile('C:\Teste/Fabricante.csv');
   end;
   IF rdrSkus.Checked then
   begin
-    MemoResposta.Lines.SaveToFile('C:\Teste/SKUS.txt');
+    MemoResposta.Lines.SaveToFile('C:\Teste/SKUS.csv');
   end;
   IF rdrProduto.checked then
   begin
-    MemoResposta.Lines.SaveToFile('C:\Teste/Produto.txt');
+    MemoResposta.Lines.SaveToFile('C:\Teste/Produto.csv');
   end;
   IF rdrArvore.Checked then
   begin
-    MemoResposta.Lines.SaveToFile('C:\Teste/Arvore de Categorias.txt');
+    MemoResposta.Lines.SaveToFile('C:\Teste/Arvore de Categorias.csv');
   end;
   IF rdrImages.Checked then
   begin
-    MemoResposta.Lines.SaveToFile('C:\Teste/Imagens.txt');
+    MemoResposta.Lines.SaveToFile('C:\Teste/Imagens.csv');
   end;
 end;
 

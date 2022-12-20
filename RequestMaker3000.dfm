@@ -161,10 +161,6 @@ object Form1: TForm1
     object TabSkyhub: TTabSheet
       Caption = 'Skyhub'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Edit1: TEdit
         Left = 24
         Top = 16
@@ -192,10 +188,6 @@ object Form1: TForm1
     object TabLojaIntegrada: TTabSheet
       Caption = 'Loja Integrada'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object edtChaveApi: TEdit
         Left = 3
         Top = 28
@@ -260,10 +252,6 @@ object Form1: TForm1
     object TabOlist: TTabSheet
       Caption = 'Olist'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object lblolistAuth: TLabel
         Left = 3
         Top = -3
@@ -413,10 +401,6 @@ object Form1: TForm1
     object Anuncios: TTabSheet
       Caption = 'Anuncios'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object gdProduto: TStringGrid
         Left = 3
         Top = 3
@@ -440,10 +424,6 @@ object Form1: TForm1
     object Status: TTabSheet
       Caption = 'Status'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object gdStatus: TStringGrid
         Left = 3
         Top = 0
