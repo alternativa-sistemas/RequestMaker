@@ -118,7 +118,7 @@ begin
   Anuncios.tabvisible:=False;
   Status.TabVisible:=False;
   Arquivo:=TStringList.Create;
-  ForceDirectories('C:/Teste');
+  ForceDirectories('C:/PlanilhasRequestMaker');
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
@@ -302,7 +302,7 @@ begin
               ProDescr:='Não possui Descrição';
             end;
             MemoResposta.Lines.Add(ProId+' ; '+ProNome+' ; '+ProDescr +' ; ' + CatId + ' ; '+FabID +' ; ' +NBMId+' ; '+OriginId+' ; '+ Modelo +' ; '+Gender+' ; '+WarrantyTime+' ; '+WarrantyText+' ; '+ Altura +' ; '+ Largura +' ; '+ Peso +' ; '+ Profundidade +' ; '+PriceFactor+' ; ');
-            MemoResposta.Lines.SaveToFile('C:\Teste\Produtos.csv');
+            MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Produtos.csv');
           end;
         end;
       end
@@ -320,7 +320,7 @@ begin
           begin
             ProId := JSONobj.getJSONArray('content').getJSONObject(x).getString('id');
             MemoResposta.Lines.Add(ProId+',');
-            MemoResposta.Lines.SaveToFile('C:\Teste\Produtos.csv');
+            MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Produtos.csv');
           end;
        end;
       end;
@@ -408,7 +408,7 @@ begin
               description1:='Sem Variação Y';
               MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+ SkuID + ' ; '+ProNome+' ; '+PrecoDe+' ; '+PrecoPor+' ; '+VarId+' ; '+VarId1+' ; '+PartnerId + ' ; ' +description+' ; '+description1+' ; '+Ean);
             end;
-          MemoResposta.Lines.SaveToFile('C:\Teste\Skus.csv');
+          MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Skus.csv');
           end;
         except
           on e:exception do
@@ -435,15 +435,15 @@ begin
               description:=(JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('description'));
               VarId:=JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('id');
               SkuID := JSON.getJSONObject(x).getString('id');
-              MemoResposta.Lines.Add(ListaCodigos[I]+' | '+ SkuId +' | '+description + ' | '+VarId);
-              MemoResposta.Lines.SaveToFile('C:\Teste\Skus.txt');
+              MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+ SkuId +' ; '+description + ' ; '+VarId);
+              MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Skus.csv');
             end else
             begin
               Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/products/'+ListaCodigos[i]+'/skus?gumgaToken='+edtToken.Text+'' );
               JSON := TJSONArray.Create(Resposta);
               SkuId := JSON.getJSONObject(x).getString('id');
               MemoResposta.Lines.Add(ListaCodigos[I]+' | '+ SkuId +' | Sem Variação');
-              MemoResposta.Lines.SaveToFile('C:\Teste\Skus.txt');
+              MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Skus.csv');
             end
           end;
         except
@@ -495,7 +495,7 @@ begin
         FabId:=JSONobj.getJSONArray('content').getJSONObject(x).getString('id');
         FabName:=(JSONobj.getJSONArray('content').getJSONObject(x).getString('name'));
         MemoResposta.Lines.Add(FabId+',');
-        MemoResposta.Lines.SaveToFile('C:\Teste\Fabricantes.csv');
+        MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Fabricantes.csv');
         Incremento := Incremento + 100;
       end;
     end;
@@ -525,7 +525,7 @@ begin
         begin
           CatId := JSONobj.getJSONArray('content').getJSONObject(x).getString('id');
           MemoResposta.Lines.Add(CatId+',');
-          MemoResposta.Lines.SaveToFile('C:\Teste\Categorias.csv');
+          MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Categorias.csv');
         end;
       end else
       begin
@@ -539,7 +539,7 @@ begin
           CatId := JSONobj.getJSONArray('content').getJSONObject(x).getString('id');
           CatNome := (JSONobj.getJSONArray('content').getJSONObject(x).getString('name'));
           MemoResposta.Lines.Add(CatId +';'+CatNome);
-          MemoResposta.Lines.SaveToFile('C:\Teste\Categorias.csv');
+          MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Categorias.csv');
         end;
       end;
     finally
@@ -569,7 +569,7 @@ begin
          Path:= (JSONobj.getJSONArray('children').getJSONObject(x).getString('path'));
          MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+ CatId +' ; '+ CatNome + ' ; ' + ListaCodigos[I]+'/'+CatId + ' ; '+ Path);
         end;
-        MemoResposta.Lines.SaveToFile('C:\Teste\Arvore de Categorias.csv');
+        MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Arvore de Categorias.csv');
       end
       ELSE
       begin
@@ -586,7 +586,7 @@ begin
          CatNome:= (JSONobj.getJSONArray('children').getJSONObject(x).getString('name'));
          MemoResposta.Lines.Add(ListaCodigos[I]+' | '+ CatId);
         end;
-        MemoResposta.Lines.SaveToFile('C:\Teste\Arvore de Categorias.csv');
+        MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Arvore de Categorias.csv');
       end else
       begin
         MemoResposta.Lines.Add(ListaCodigos[I]+'; Não tem subCategoria');
@@ -618,7 +618,7 @@ begin
         MemoResposta.Lines.Add(IdTipoGrade+' ; '+NomeTipoGrade + ' ; ' + IdGrade +' ; '+ NomeGrade);
       end;
     end;
-    MemoResposta.Lines.SaveToFile('C:\Teste\TipoGrades.csv');
+    MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\TipoGrades.csv');
   end;
 
   IF rdrImages.Checked = True then
@@ -654,7 +654,7 @@ begin
 
       end;
     end;
-   MemoResposta.Lines.SaveToFile('C:\Teste\Urls.csv');
+   MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Urls.csv');
   end;
 end;
 
@@ -667,27 +667,27 @@ procedure TForm1.btnSalvarClick(Sender: TObject);
 begin
   IF rdrFab.Checked then
   begin
-    memoresposta.Lines.SaveToFile('C:\Teste/Fabricante.csv');
+    memoresposta.Lines.SaveToFile('C:\PlanilhasRequestMaker/Fabricante.csv');
   end;
   IF rdrCategorias.Checked then
   begin
-    MemoResposta.Lines.SaveToFile('C:\Teste/Fabricante.csv');
+    MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker/Fabricante.csv');
   end;
   IF rdrSkus.Checked then
   begin
-    MemoResposta.Lines.SaveToFile('C:\Teste/SKUS.csv');
+    MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker/SKUS.csv');
   end;
   IF rdrProduto.checked then
   begin
-    MemoResposta.Lines.SaveToFile('C:\Teste/Produto.csv');
+    MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker/Produto.csv');
   end;
   IF rdrArvore.Checked then
   begin
-    MemoResposta.Lines.SaveToFile('C:\Teste/Arvore de Categorias.csv');
+    MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker/Arvore de Categorias.csv');
   end;
   IF rdrImages.Checked then
   begin
-    MemoResposta.Lines.SaveToFile('C:\Teste/Imagens.csv');
+    MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker/Imagens.csv');
   end;
 end;
 
