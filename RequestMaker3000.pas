@@ -301,7 +301,7 @@ begin
             begin
               ProDescr:='Não possui Descrição';
             end;
-            MemoResposta.Lines.Add(ProId+' ; '+ProNome+' ; '+ProDescr +' ; ' + CatId + ' ; '+FabID +' ; ' +NBMId+' ; '+OriginId+' ; '+ Modelo +' ; '+Gender+' ; '+WarrantyTime+' ; '+WarrantyText+' ; '+ Altura +' ; '+ Largura +' ; '+ Peso +' ; '+ Profundidade +' ; '+PriceFactor+' ; ');
+            MemoResposta.Lines.Add(ProId+' ; '+ProNome+' ; '+ProDescr+' ; ' +CatId + ' ; '+FabID +' ; ' +NBMId+' ; '+OriginId+' ; '+Modelo+' ; '+Gender+' ; '+WarrantyTime+' ; '+WarrantyText+' ; '+Altura+' ; '+Largura+' ; '+Peso+' ; '+Profundidade+' ; '+PriceFactor+' ; ');
             MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Produtos.csv');
           end;
         end;
@@ -371,7 +371,7 @@ begin
                 PrecoDe:=JSON.getJSONObject(x).getString('price');
                 PrecoPor:=JSON.getJSONObject(x).getString('sellprice');
                 Ean:=JSON.getJSONObject(x).getString('ean');
-                MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+ SkuID + ' ; '+ProNome+' ; '+PrecoDe+' ; '+PrecoPor+' ; '+VarId+' ; '+VarId1+' ; '+PartnerId + ' ; ' +description+' ; '+description1+' ; '+Ean);
+                MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+SkuID+ ' ; '+ProNome+' ; '+PrecoDe+' ; '+PrecoPor+' ; '+VarId+' ; '+VarId1+' ; '+PartnerId+' ; '+description+' ; '+description1+' ; '+Ean);
               end
               else
               begin
@@ -384,7 +384,7 @@ begin
                 Ean:=JSON.getJSONObject(x).getString('ean');
                 VarId1:='Sem Variação Y';
                 description1:='Sem Variação Y';
-                MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+ SkuID + ' ; '+ProNome+' ; '+PrecoDe+' ; '+PrecoPor+' ; '+VarId+' ; '+VarId1+' ; '+PartnerId + ' ; ' +description+' ; '+description1+' ; '+Ean);
+                MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+SkuID+ ' ; '+ProNome+' ; '+PrecoDe+' ; '+PrecoPor+' ; '+VarId+' ; '+VarId1+' ; '+PartnerId+' ; '+description+' ; '+description1+' ; '+Ean);
               end;
             end else
             begin
@@ -406,14 +406,14 @@ begin
               description:='Sem Variação X';
               VarId1:='Sem Variação Y';
               description1:='Sem Variação Y';
-              MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+ SkuID + ' ; '+ProNome+' ; '+PrecoDe+' ; '+PrecoPor+' ; '+VarId+' ; '+VarId1+' ; '+PartnerId + ' ; ' +description+' ; '+description1+' ; '+Ean);
+              MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+SkuID+ ' ; '+ProNome+' ; '+PrecoDe+' ; '+PrecoPor+' ; '+VarId+' ; '+VarId1+' ; '+PartnerId+' ; '+description+' ; '+description1+' ; '+Ean);
             end;
           MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Skus.csv');
           end;
         except
           on e:exception do
           begin
-            MemoResposta.Lines.Add(ListaCodigos[i]+' - Não Existe Sku para este produto - '+ e.message);
+            MemoResposta.Lines.Add(ListaCodigos[i]+' - Não Existe Sku para este produto - '+e.message);
           end;
         end
       end
@@ -435,21 +435,21 @@ begin
               description:=(JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('description'));
               VarId:=JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('id');
               SkuID := JSON.getJSONObject(x).getString('id');
-              MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+ SkuId +' ; '+description + ' ; '+VarId);
+              MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+SkuId+' ; '+description+ ' ; '+VarId);
               MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Skus.csv');
             end else
             begin
               Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/products/'+ListaCodigos[i]+'/skus?gumgaToken='+edtToken.Text+'' );
               JSON := TJSONArray.Create(Resposta);
               SkuId := JSON.getJSONObject(x).getString('id');
-              MemoResposta.Lines.Add(ListaCodigos[I]+' | '+ SkuId +' | Sem Variação');
+              MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+SkuId+' ; Sem Variação');
               MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Skus.csv');
             end
           end;
         except
           on e:exception do
           begin
-            MemoResposta.Lines.Add(ListaCodigos[i]+' - Não Existe Sku para este produto - '+ e.message);
+            MemoResposta.Lines.Add(ListaCodigos[i]+' - Não Existe Sku para este produto - '+e.message);
           end;
         end;
       end;
@@ -538,7 +538,7 @@ begin
         begin
           CatId := JSONobj.getJSONArray('content').getJSONObject(x).getString('id');
           CatNome := (JSONobj.getJSONArray('content').getJSONObject(x).getString('name'));
-          MemoResposta.Lines.Add(CatId +';'+CatNome);
+          MemoResposta.Lines.Add(CatId+';'+CatNome);
           MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Categorias.csv');
         end;
       end;
@@ -567,7 +567,7 @@ begin
          CatId:= JSONobj.getJSONArray('children').getJSONObject(x).getString('id');
          CatNome:= (JSONobj.getJSONArray('children').getJSONObject(x).getString('name'));
          Path:= (JSONobj.getJSONArray('children').getJSONObject(x).getString('path'));
-         MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+ CatId +' ; '+ CatNome + ' ; ' + ListaCodigos[I]+'/'+CatId + ' ; '+ Path);
+         MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+CatId+' ; '+CatNome+' ; '+ListaCodigos[I]+'/'+CatId+' ; '+Path);
         end;
         MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Arvore de Categorias.csv');
       end
@@ -584,7 +584,7 @@ begin
         begin
          CatId:= JSONobj.getJSONArray('children').getJSONObject(x).getString('id');
          CatNome:= (JSONobj.getJSONArray('children').getJSONObject(x).getString('name'));
-         MemoResposta.Lines.Add(ListaCodigos[I]+' | '+ CatId);
+         MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+CatId);
         end;
         MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Arvore de Categorias.csv');
       end else
@@ -615,7 +615,7 @@ begin
         NomeTipoGrade := (pJsonObj.getString('name'));
         IdGrade := pJsonObj.getJSONArray('values').getJSONObject(y).getString('id');
         NomeGrade := (pJsonObj.getJSONArray('values').getJSONObject(y).getString('description'));
-        MemoResposta.Lines.Add(IdTipoGrade+' ; '+NomeTipoGrade + ' ; ' + IdGrade +' ; '+ NomeGrade);
+        MemoResposta.Lines.Add(IdTipoGrade+' ; '+NomeTipoGrade+' ; '+IdGrade+' ; '+NomeGrade);
       end;
     end;
     MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\TipoGrades.csv');
@@ -817,7 +817,7 @@ begin
         begin
           IdLi:= JSONobj.getJSONArray('objects').getJSONObject(x).getString('id');
           NomeLi:= JSONobj.getJSONArray('objects').getJSONObject(x).getString('nome');
-          MemoResposta.Lines.Add(IdLi+' - ' + Nomeli);
+          MemoResposta.Lines.Add(IdLi+' - '+Nomeli);
         end;
         Incremento := Incremento+10;
       finally
@@ -863,7 +863,7 @@ begin
         for x := 0 to JSONObj.getJSONArray('objects').length -1  do
           begin
             urlLi:= JSONobj.getJSONArray('objects').getJSONObject(x).getString('caminho');
-            MemoResposta.Lines.Add(ListaCodigos[i]+' - ' + urlli);
+            MemoResposta.Lines.Add(ListaCodigos[i]+' - '+urlli);
             counter:=counter+1;
             IF counter > 20 then
             begin

@@ -439,7 +439,6 @@ object Form1: TForm1
   end
   object IdHTTP1: TIdHTTP
     IOHandler = IdSSLIOHandlerSocketOpenSSL1
-    AllowCookies = True
     HandleRedirects = True
     ProxyParams.BasicAuthentication = False
     ProxyParams.ProxyPort = 0
@@ -469,11 +468,6 @@ object Form1: TForm1
     Top = 608
   end
   object NetHTTPClient1: TNetHTTPClient
-    Asynchronous = False
-    ConnectionTimeout = 60000
-    ResponseTimeout = 60000
-    HandleRedirects = True
-    AllowCookies = True
     UserAgent = 'Embarcadero URI Client/1.0'
     OnAuthEvent = NetHTTPClient1AuthEvent
     Left = 1065
