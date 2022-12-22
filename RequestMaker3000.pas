@@ -370,7 +370,14 @@ begin
                 ProNome:=(JSON.getJSONObject(x).getString('title'));
                 PrecoDe:=JSON.getJSONObject(x).getString('price');
                 PrecoPor:=JSON.getJSONObject(x).getString('sellprice');
-                Ean:=JSON.getJSONObject(x).getString('ean');
+                if JSON.getJSONObject(x).has('ean') then
+                begin
+                  Ean:=JSON.getJSONObject(x).getString('ean');
+                end
+                else
+                begin
+                  Ean:='Sem campo ean';
+                end;
                 MemoResposta.Lines.Add(ListaCodigos[I]+';'+SkuID+ ';'+ProNome+';'+PrecoDe+';'+PrecoPor+';'+VarId+';'+VarId1+';'+PartnerId+';'+description+';'+description1+';'+Ean);
               end
               else
@@ -381,7 +388,14 @@ begin
                 PrecoDe:=JSON.getJSONObject(x).getString('price');
                 PrecoPor:=JSON.getJSONObject(x).getString('sellprice');
                 SkuID:=JSON.getJSONObject(x).getString('id');
-                Ean:=JSON.getJSONObject(x).getString('ean');
+                if JSON.getJSONObject(x).has('ean') then
+                begin
+                  Ean:=JSON.getJSONObject(x).getString('ean');
+                end
+                else
+                begin
+                  Ean:='Sem campo ean';
+                end;
                 VarId1:='Sem Variação Y';
                 description1:='Sem Variação Y';
                 MemoResposta.Lines.Add(ListaCodigos[I]+';'+SkuID+ ';'+ProNome+';'+PrecoDe+';'+PrecoPor+';'+VarId+';'+VarId1+';'+PartnerId+';'+description+';'+description1+';'+Ean);
@@ -401,7 +415,14 @@ begin
               PrecoPor:=JSON.getJSONObject(x).getString('sellprice');
               PartnerId:=JSON.getJSONObject(x).getString('PartnerID');
               SkuID:=JSON.getJSONObject(x).getString('id');
-              Ean:=JSON.getJSONObject(x).getString('ean');
+              if JSON.getJSONObject(x).has('ean') then
+              begin
+                Ean:=JSON.getJSONObject(x).getString('ean');
+              end
+              else
+              begin
+                Ean:='Sem campo ean';
+              end;
               VarId:='Sem Variação X';
               description:='Sem Variação X';
               VarId1:='Sem Variação Y';
