@@ -301,7 +301,7 @@ begin
             begin
               ProDescr:='Não possui Descrição';
             end;
-            MemoResposta.Lines.Add(ProId+' ; '+ProNome+' ; '+ProDescr+' ; ' +CatId + ' ; '+FabID +' ; ' +NBMId+' ; '+OriginId+' ; '+Modelo+' ; '+Gender+' ; '+WarrantyTime+' ; '+WarrantyText+' ; '+Altura+' ; '+Largura+' ; '+Peso+' ; '+Profundidade+' ; '+PriceFactor+' ; ');
+            MemoResposta.Lines.Add(ProId+';'+ProNome+';'+ProDescr+';' +CatId + ';'+FabID +';' +NBMId+';'+OriginId+';'+Modelo+';'+Gender+';'+WarrantyTime+';'+WarrantyText+';'+Altura+';'+Largura+';'+Peso+';'+Profundidade+';'+PriceFactor+';');
             MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Produtos.csv');
           end;
         end;
@@ -371,7 +371,7 @@ begin
                 PrecoDe:=JSON.getJSONObject(x).getString('price');
                 PrecoPor:=JSON.getJSONObject(x).getString('sellprice');
                 Ean:=JSON.getJSONObject(x).getString('ean');
-                MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+SkuID+ ' ; '+ProNome+' ; '+PrecoDe+' ; '+PrecoPor+' ; '+VarId+' ; '+VarId1+' ; '+PartnerId+' ; '+description+' ; '+description1+' ; '+Ean);
+                MemoResposta.Lines.Add(ListaCodigos[I]+';'+SkuID+ ';'+ProNome+';'+PrecoDe+';'+PrecoPor+';'+VarId+';'+VarId1+';'+PartnerId+';'+description+';'+description1+';'+Ean);
               end
               else
               begin
@@ -384,7 +384,7 @@ begin
                 Ean:=JSON.getJSONObject(x).getString('ean');
                 VarId1:='Sem Variação Y';
                 description1:='Sem Variação Y';
-                MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+SkuID+ ' ; '+ProNome+' ; '+PrecoDe+' ; '+PrecoPor+' ; '+VarId+' ; '+VarId1+' ; '+PartnerId+' ; '+description+' ; '+description1+' ; '+Ean);
+                MemoResposta.Lines.Add(ListaCodigos[I]+';'+SkuID+ ';'+ProNome+';'+PrecoDe+';'+PrecoPor+';'+VarId+';'+VarId1+';'+PartnerId+';'+description+';'+description1+';'+Ean);
               end;
             end else
             begin
@@ -406,7 +406,7 @@ begin
               description:='Sem Variação X';
               VarId1:='Sem Variação Y';
               description1:='Sem Variação Y';
-              MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+SkuID+ ' ; '+ProNome+' ; '+PrecoDe+' ; '+PrecoPor+' ; '+VarId+' ; '+VarId1+' ; '+PartnerId+' ; '+description+' ; '+description1+' ; '+Ean);
+              MemoResposta.Lines.Add(ListaCodigos[I]+';'+SkuID+ ';'+ProNome+';'+PrecoDe+';'+PrecoPor+';'+VarId+';'+VarId1+';'+PartnerId+';'+description+';'+description1+';'+Ean);
             end;
           MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Skus.csv');
           end;
@@ -435,14 +435,14 @@ begin
               description:=(JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('description'));
               VarId:=JSON.getJSONObject(x).getJSONArray('variations').getJSONObject(0).getString('id');
               SkuID := JSON.getJSONObject(x).getString('id');
-              MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+SkuId+' ; '+description+ ' ; '+VarId);
+              MemoResposta.Lines.Add(ListaCodigos[I]+';'+SkuId+';'+description+ ';'+VarId);
               MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Skus.csv');
             end else
             begin
               Resposta := IdHTTP1.get('http://api.anymarket.com.br/v2/products/'+ListaCodigos[i]+'/skus?gumgaToken='+edtToken.Text+'' );
               JSON := TJSONArray.Create(Resposta);
               SkuId := JSON.getJSONObject(x).getString('id');
-              MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+SkuId+' ; Sem Variação');
+              MemoResposta.Lines.Add(ListaCodigos[I]+';'+SkuId+' ; Sem Variação');
               MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Skus.csv');
             end
           end;
@@ -486,7 +486,7 @@ begin
         begin
           FabId:=JSONobj.getJSONArray('content').getJSONObject(x).getString('id');
           FabName:=(JSONobj.getJSONArray('content').getJSONObject(x).getString('name'));
-          MemoResposta.Lines.Add(FabId +' ; '+FabName);
+          MemoResposta.Lines.Add(FabId +';'+FabName);
           Incremento := Incremento + 100;
         end;
       end ELSE
@@ -567,7 +567,7 @@ begin
          CatId:= JSONobj.getJSONArray('children').getJSONObject(x).getString('id');
          CatNome:= (JSONobj.getJSONArray('children').getJSONObject(x).getString('name'));
          Path:= (JSONobj.getJSONArray('children').getJSONObject(x).getString('path'));
-         MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+CatId+' ; '+CatNome+' ; '+ListaCodigos[I]+'/'+CatId+' ; '+Path);
+         MemoResposta.Lines.Add(ListaCodigos[I]+';'+CatId+';'+CatNome+';'+ListaCodigos[I]+'/'+CatId+';'+Path);
         end;
         MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Arvore de Categorias.csv');
       end
@@ -584,7 +584,7 @@ begin
         begin
          CatId:= JSONobj.getJSONArray('children').getJSONObject(x).getString('id');
          CatNome:= (JSONobj.getJSONArray('children').getJSONObject(x).getString('name'));
-         MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+CatId);
+         MemoResposta.Lines.Add(ListaCodigos[I]+';'+CatId);
         end;
         MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\Arvore de Categorias.csv');
       end else
@@ -615,7 +615,7 @@ begin
         NomeTipoGrade := (pJsonObj.getString('name'));
         IdGrade := pJsonObj.getJSONArray('values').getJSONObject(y).getString('id');
         NomeGrade := (pJsonObj.getJSONArray('values').getJSONObject(y).getString('description'));
-        MemoResposta.Lines.Add(IdTipoGrade+' ; '+NomeTipoGrade+' ; '+IdGrade+' ; '+NomeGrade);
+        MemoResposta.Lines.Add(IdTipoGrade+';'+NomeTipoGrade+';'+IdGrade+';'+NomeGrade);
       end;
     end;
     MemoResposta.Lines.SaveToFile('C:\PlanilhasRequestMaker\TipoGrades.csv');
@@ -647,7 +647,7 @@ begin
         VarImage := JSON.getJSONObject(x).getString('variation');
         principal := JSON.getJSONObject(x).getString('main');
         index := JSON.getJSONObject(x).getString('index');
-        MemoResposta.Lines.Add(ListaCodigos[I]+' ; '+IdImg+' ; '+principal+' ; '+index+' ; '+VarImage+' ; '+url);
+        MemoResposta.Lines.Add(ListaCodigos[I]+';'+IdImg+';'+principal+';'+index+';'+VarImage+';'+url);
       end
       else
       begin
